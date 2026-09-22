@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Calculadora de Chamadas OGMO — v29.1 Tab corrigido</title>
+<style>
+  :root{
+    /* paleta JBS Terminais — azul sólido + verde sustentabilidade */
+    --navy:#0a2a5e;--navy2:#0f3f8c;--sea:#1666c4;--sea2:#2f86e0;--sky:#e7f0fb;
+    --green:#1b8f5a;--greenbg:#dcf3e7;
+    --ink:#132238;--muted:#647089;
+    --amber:#eef4fc;--line:#d6e0ee;--soft:#f4f8fd;--panel:#ffffff;--bg:#eef2f8;
+    --good:#166534;--goodbg:#d6f5df;--warn:#8a5a00;--warnbg:#fff0c9;--bad:#9b1c1c;--badbg:#ffe0e0;
+    --info:#0f3f8c;--infobg:#dce9ff;--r:16px;--sh:0 6px 20px rgba(10,42,94,.12);
+    --fieldbg:#f2f7fd;
+    --grad1:#0a2a5e;--grad2:#0f3f8c;--grad3:#1666c4;  /* gradiente header sempre escuro */
+    --strong:#0a2a5e;  /* texto de destaque (números KPI) */
+    --headtext:#ffffff;
+  }
+  [data-theme="dark"]{
+    --navy:#5aa2f0;--navy2:#79b6f5;--sea:#3f92e8;--sea2:#5aa2f0;--sky:#16263f;
+    --green:#3fce8f;--greenbg:#123528;
+    --ink:#e8eef7;--muted:#9fb0c8;
+    --amber:#1a2740;--line:#283a56;--soft:#16233a;--panel:#12203a;--bg:#0b1626;
+    --good:#7fe0a4;--goodbg:#123528;--warn:#f2c56a;--warnbg:#3a2e10;--bad:#f2a0a0;--badbg:#3a1414;
+    --info:#79b6f5;--infobg:#16263f;--sh:0 6px 20px rgba(0,0,0,.4);--fieldbg:#16233a;
+    --grad1:#0a2a5e;--grad2:#123a72;--grad3:#1666c4;
+    --strong:#dbe9fb;
+    --headtext:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",Inter,Roboto,Arial,sans-serif;color:var(--ink);background:var(--bg);transition:background .25s,color .25s}
+  header{background:linear-gradient(120deg,var(--grad1),var(--grad2) 60%,var(--grad3));color:#fff;padding:18px 26px 46px;
+         display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+  .hd-left{display:flex;align-items:center;gap:14px}
+  .hd-logo{font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1;display:flex;align-items:center}
+  .hd-logo span{color:var(--green);font-size:36px;margin-left:1px}
+  header h1{margin:0;font-size:22px;font-weight:800;letter-spacing:.2px}
+  header p{margin:5px 0 0;font-size:12px;opacity:.85}
+  .themeBtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:11px;
+            padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+  .themeBtn:hover{background:rgba(255,255,255,.24)}
+  @media(max-width:640px){header{flex-direction:column}}
+  .wrap{max-width:1520px;margin:-32px auto 0;padding:0 16px 70px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;margin-bottom:14px}
+  .card h2{margin:0 0 2px;font-size:16px;color:var(--strong)}
+  .card h2 em{font-style:normal;font-weight:400;font-size:12.5px;color:var(--muted)}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  label{display:block;font-size:11.5px;font-weight:700;color:#41566d;margin:10px 0 4px}
+  .field{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:13.5px;background:var(--fieldbg);color:var(--ink)}
+  select.field{background:var(--fieldbg);color:var(--ink);cursor:pointer}
+  .field:focus{outline:3px solid rgba(27,134,196,.25);border-color:var(--sea)}
+  .hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+  .btn{border:0;border-radius:11px;padding:10px 16px;font-weight:800;font-size:13.5px;cursor:pointer;background:var(--sea);color:#fff}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.big{padding:14px 26px;font-size:15px;border-radius:14px;box-shadow:0 4px 14px rgba(27,134,196,.35)}
+  .btn.sec{background:#e5ecf4;color:#2f4457}
+  .bar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .tabs{display:flex;gap:8px;margin-bottom:14px}
+  .tab{background:var(--soft);border:1px solid var(--line);border-radius:14px 14px 0 0;padding:12px 22px;
+       font-weight:800;font-size:14px;color:#476a8a;cursor:pointer;user-select:none;box-shadow:var(--sh)}
+  .tab.on{background:var(--panel);color:var(--strong);position:relative;top:1px}
+  .tab span{font-size:16px;margin-right:6px}
+  .pane{display:none}.pane.on{display:block}
+  .crane{border:1px solid var(--line);border-radius:14px;padding:12px;background:linear-gradient(180deg,var(--panel),var(--soft));position:relative}
+  .crane.on{border-color:var(--sea);box-shadow:0 4px 14px rgba(27,134,196,.18)}
+  .crane.off{opacity:.5;filter:grayscale(.6)}
+  .crane .ico{font-size:24px}.crane h4{margin:4px 0 0;font-size:14px}
+  .crane .sub{font-size:11px;color:var(--muted);margin-bottom:8px}
+  .crane input[type=number]{width:100%;border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:13px;background:var(--fieldbg);color:var(--ink);text-align:right}
+  .sw{position:absolute;top:10px;right:10px;transform:scale(1.25)}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;margin:14px 0}
+  .kpi{background:linear-gradient(180deg,var(--panel),var(--sky));border:1px solid var(--line);border-radius:14px;padding:12px}
+  .kpi b{display:block;font-size:11px;color:var(--muted)}
+  .kpi span{display:block;font-size:20px;font-weight:900;margin-top:2px;font-variant-numeric:tabular-nums;color:var(--strong)}
+  .kpi small{font-size:10.5px;color:var(--muted)}
+  .prog{height:16px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin-top:6px}
+  .prog i{height:100%}
+  .progLab{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:5px}
+  .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:6px}
+  .opt{border:2px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column}
+  .opt.win{border-color:var(--sea)}
+  .opt .rib{padding:10px 14px;font-weight:800;font-size:13.5px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+  .rib.cheap{background:linear-gradient(100deg,#15803d,#3fae6a)}
+  .rib.fast{background:linear-gradient(100deg,#b45309,#e59b32)}
+  .rib.mid{background:linear-gradient(100deg,#1b5f96,#3f9bd4)}
+  .opt .bd{padding:13px 15px;flex:1}
+  .opt .big{font-size:24px;font-weight:900;color:var(--strong);line-height:1.15}
+  .opt dl{display:grid;grid-template-columns:auto auto;gap:4px 10px;margin:10px 0 0;font-size:12.5px}
+  .opt dt{color:var(--muted)}.opt dd{margin:0;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+  .opt .foot{padding:0 15px 14px}
+  .delta{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .seq{display:flex;gap:3px;flex-wrap:wrap;margin-top:9px}
+  .seq b{font-size:10px;border-radius:7px;padding:3px 6px;font-weight:700}
+  .seq b.d{background:#fdf0d0;color:#8a5a00}.seq b.n{background:#e2e6f7;color:#3f4e93}
+  .periodos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}.periodoBox{border:1px solid var(--line);border-radius:10px;padding:7px 8px;font-size:10.5px;text-align:center;font-weight:800}.periodoBox.work{background:var(--greenbg);color:var(--good);border-color:var(--green);border-left:4px solid var(--green)}.periodoBox.skip{background:var(--soft);color:var(--muted);border-style:dashed;border-left:4px solid var(--line)}.periodoBox small{display:block;font-weight:600;font-size:9.5px;margin-top:3px;color:inherit;opacity:.95}.periodoBox em{display:block;font-style:normal;font-weight:800;font-size:11px;margin-top:4px}.periodoBox .pbTop{font-size:11px;letter-spacing:.02em}.opCost{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}.heTag{background:#fff4d6;color:#8a5a00;border:1px solid #e7c970;border-radius:8px;padding:3px 7px;font-weight:800;font-size:11px}
+  .leitura{background:var(--infobg);border:1px solid var(--line);border-radius:14px;padding:13px 15px;font-size:13px;line-height:1.6;color:var(--ink);margin-top:14px}
+  .leitura b{color:var(--strong)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11px;color:#4a5b70;padding:7px;border-bottom:2px solid var(--line);white-space:nowrap}
+  td{padding:6px 7px;border-bottom:1px solid var(--line)}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  tr.sel td{background:var(--sky)}
+  .tag{display:inline-block;border-radius:99px;padding:4px 11px;font-size:11.5px;font-weight:800;white-space:nowrap}
+  .t-good{background:var(--goodbg);color:var(--good)}.t-warn{background:var(--warnbg);color:var(--warn)}
+  .t-bad{background:var(--badbg);color:var(--bad)}.t-info{background:var(--infobg);color:var(--info)}.t-off{background:#e7ebf0;color:#5b6b80}
+  .chips{display:flex;gap:4px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);border-radius:9px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--muted)}
+  .chip.on{background:var(--sea);border-color:var(--sea);color:#fff}
+  .chip.na{opacity:.3;cursor:not-allowed}
+  .mini{font-size:11.5px;color:var(--muted)}
+  .grp{background:var(--soft);border:1px solid var(--line);border-radius:13px;padding:12px;margin:0 0 12px}
+  .grp h3{margin:0 0 8px;font-size:13.5px;color:var(--strong)}
+  .grp input,.grp select{border:1px solid var(--line);border-radius:8px;padding:4px 6px;font-size:12px;background:var(--fieldbg);color:var(--ink)}
+  .rep{font-family:Consolas,"Courier New",monospace;font-size:12px;white-space:pre-wrap;background:#0a1c33;color:#d7e6f3;border:1px solid var(--line);border-radius:14px;padding:15px;line-height:1.55;max-height:560px;overflow:auto}
+  details.tech{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh)}
+  details.tech>summary{cursor:pointer;font-weight:800;color:var(--strong);padding:15px 18px;font-size:14.5px}
+  .techbody{padding:0 18px 18px}
+  .warnbox{background:var(--warnbg);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:12.5px;line-height:1.55;color:var(--warn);margin-top:12px}
+  .opbox{border:1px solid var(--line);border-radius:13px;padding:12px;background:var(--soft)}
+  .opbox h4{margin:0 0 3px;font-size:13.5px;color:var(--strong)}
+  .split{display:flex;gap:6px;align-items:center;margin-top:8px}
+  .split input{width:66px;border:1px solid var(--line);border-radius:9px;padding:6px 8px;text-align:right;background:var(--fieldbg);color:var(--ink)}
+  .bal{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .toast{position:fixed;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;opacity:0;transform:translateY(8px);transition:.2s;z-index:99}
+  .toast.on{opacity:1;transform:none}
+  /* cards de turno do simulador */
+  .simcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);margin-bottom:12px;overflow:hidden}
+  .simcard.sel{border-color:var(--sea);box-shadow:0 4px 14px rgba(22,102,196,.2)}
+  .simcard.off{opacity:.55}
+  .sc-head{display:flex;align-items:center;gap:10px;padding:10px 14px;color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;flex-wrap:wrap}
+  .sc-head.day{background:linear-gradient(100deg,#c47f0a,#e0a534)}
+  .sc-head.night{background:linear-gradient(100deg,#183a72,#2a5aa8)}
+  .sc-head.nao{background:linear-gradient(100deg,#7a2530,#a8434f)}
+  .sc-head .who{flex:1;min-width:120px}
+  .sc-head .k{font-weight:800}
+  .sc-head input,.sc-head select{border:none;border-radius:8px;padding:5px 7px;font-size:12.5px;background:rgba(255,255,255,.9);color:#132238}
+  .sc-body{padding:12px 14px;display:none}
+  .simcard.open .sc-body{display:block}
+  .sc-terno{display:grid;grid-template-columns:150px 1fr 1fr 90px auto;gap:8px;align-items:center;margin:6px 0;padding:8px;background:var(--soft);border-radius:10px}
+  .sc-terno .totalmov strong{display:block;padding:7px 9px;border:1px solid var(--sea);border-radius:8px;background:var(--sky);color:var(--strong);font-size:15px;text-align:right;font-variant-numeric:tabular-nums}
+  .sc-terno .cv{display:flex;flex-direction:column;gap:2px}
+  .sc-terno .cv label{margin:0;font-size:10px;color:var(--muted)}
+  .sc-terno input[type=number]{width:100%;border:1px solid var(--line);border-radius:8px;padding:6px 8px;text-align:right;background:var(--fieldbg);color:var(--ink);font-size:13px}
+  .sc-terno .cheio input{border-color:#3fae6a}.sc-terno .vazio input{border-color:#9fb0c8}
+  .sc-crane{font-weight:700;font-size:12.5px;color:var(--strong)}
+  .sc-crane small{display:block;color:var(--muted);font-weight:400}
+  .sc-sum{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;font-size:12.5px;color:var(--muted)}
+  .sc-sum b{color:var(--strong);font-variant-numeric:tabular-nums}
+  .sc-chips{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}
+  .toggle{display:flex;align-items:center;gap:6px;font-size:12px;background:rgba(255,255,255,.85);border-radius:8px;padding:4px 8px;color:#132238;cursor:pointer}
+  .badge{background:rgba(255,255,255,.25);border-radius:8px;padding:3px 8px;font-size:11.5px}
+  @media(max-width:1150px){.g5,.kpis,.opts{grid-template-columns:repeat(2,1fr)}.g2,.g3,.g4{grid-template-columns:1fr}}
+  @media print{header{padding:12px}.tabs,.btn,details.tech,.bar{display:none}.pane{display:block!important}body{background:#fff}}
+
+/* v26: presentation only; calculation functions and parameters preserved. */
+:root{--muted:#52627a;--line:#c6d3e2;--sh:0 3px 14px rgba(10,42,94,.06)}
+[data-theme="dark"]{color-scheme:dark;--muted:#b3c2d7;--line:#425570;--sea:#216bc0;--fieldbg:#192b43}
+body{line-height:1.5}label,th{color:var(--muted)}label,.mini,.hint,.bal{font-size:12px}
+button,input,select{font-family:inherit}button,input:not([type=checkbox]),select{min-height:40px}
+input[type=checkbox]{accent-color:var(--sea);width:17px;height:17px}
+button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sea2);outline-offset:3px}
+.card{padding:20px;margin-bottom:18px}.card h2{font-size:18px;margin-bottom:8px}.g2,.g3,.g4,.g5{min-width:0}.g2>*,.g3>*,.g4>*,.g5>*{min-width:0}
+.btn.sec{background:var(--sky);color:var(--strong);border:1px solid var(--line)}
+.tabs{gap:6px;padding:5px;border:1px solid var(--line);border-radius:14px;background:var(--panel);width:fit-content}
+.tab{border-radius:10px;box-shadow:none;color:var(--muted);background:transparent;border-color:transparent}
+.tab.on{top:0;background:var(--sea);color:#fff}.tab:hover{border-color:var(--sea)}
+.rib.cheap{background:#146b3c}.rib.fast{background:#914706}.rib.mid{background:#175689}
+.periodos{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.periodoBox{font-size:11px;padding:10px}.periodoBox small{font-size:11px}.periodoBox.skip{opacity:1}
+.opt .rib{gap:10px;flex-wrap:wrap}.opt dl{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.opt dd{overflow-wrap:anywhere}.opt .bd{flex:0}.opt .foot{margin-top:auto;padding-top:16px}
+.auto-moves{padding:0 15px 6px}.auto-moves h3{font-size:14px;margin:14px 0 2px}.auto-shift{border:1px solid var(--line);border-radius:10px;margin-top:9px;overflow:hidden}.auto-shift summary{cursor:pointer;padding:11px;background:var(--soft);font-weight:700;font-size:12px}.auto-ternos{padding:0 8px 8px}
+.sc-equipment{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;background:var(--soft);border-bottom:1px solid var(--line)}.sc-equipment>strong{font-size:12px;color:var(--strong)}.sc-equipment>.btn{margin-left:auto;font-size:12px}.sc-chips{margin:0;gap:7px}
+.chip{min-height:40px;padding:8px 12px;font-size:12px}.chip:disabled{opacity:1;color:var(--muted);background:var(--soft);border-style:dashed;cursor:not-allowed}.chip.on{font-weight:800}
+.sc-head{gap:9px;padding:13px 14px}.sc-head.day{background:#805313}.sc-head.night{background:#213f72}.sc-head.nao{background:#842e3c}.sc-head .toggle{margin:0;background:#fff;color:#132238;min-height:40px}.sc-head input,.sc-head select{color-scheme:light;background:#fff}.shift-state{font-size:11px;letter-spacing:.025em}.simcard.off{opacity:1;border-style:dashed}.simcard.off .sc-head{background:#48556a}
+.sc-terno{grid-template-columns:minmax(130px,1fr) minmax(80px,1fr) minmax(80px,1fr) 90px 40px;padding:12px;border:1px solid var(--line);gap:12px}.sc-terno .cv label,.sc-terno .cv>span{font-size:11px;font-weight:700;color:var(--muted)}.sc-terno .cv strong{padding:8px 10px;border:1px solid var(--line);border-radius:8px;color:var(--strong);font-size:16px;text-align:right;background:var(--fieldbg)}.sc-terno .cheio strong{border-color:var(--green)}
+.auto-moves .sc-terno{grid-template-columns:1fr 1fr;gap:8px}.auto-moves .sc-crane{grid-column:1/-1}.sc-sum{gap:10px 22px;padding:8px 0}.tech{margin-top:20px}.grp{overflow-x:auto}.toast{background:#123a72;color:#fff}.heTag{background:var(--warnbg);color:var(--warn)}.crane.off{opacity:1;filter:none;border-style:dashed}.crane.off h4{color:var(--muted)}
+[data-theme="dark"] .tab.on,[data-theme="dark"] .chip.on{color:#fff}[data-theme="dark"] [style*="color:#9b1c1c"]{color:var(--bad)!important}
+@media(max-width:760px){.opts{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:0 10px 35px}.card{padding:15px}.sc-terno{grid-template-columns:1fr 1fr 1fr 40px}.sc-terno .sc-crane{grid-column:1/-1}.sc-equipment>.btn{margin-left:0}.sc-head .who{flex-basis:100%}.g4>[style*="span 2"]{grid-column:1/-1!important}.tab{padding:10px 16px}.kpi span{font-size:18px}.sc-head input[type=date]{max-width:155px}.auto-moves .sc-terno{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media print{.sc-equipment>.btn{display:none}.sc-body{display:block}.opt{break-inside:avoid}}
+
+
+.ship-details{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}.ship-details summary,.shift-details summary{cursor:pointer;font-weight:800;color:var(--strong);padding:10px 0}.shift-details[open]>summary{margin-bottom:14px}.equipment-total{display:block;margin-top:5px;font-size:13px;color:var(--strong)}.pdf-option{display:flex;align-items:center;gap:8px;margin:0}.summary-scroll{overflow:auto}.ship-summary h3{font-size:15px;color:var(--strong);margin:20px 0 8px}.ship-summary table{min-width:480px}.ship-summary td,.ship-summary th{padding:9px}.ship-summary .summary-total{padding:14px;background:var(--sky);border:1px solid var(--line);border-radius:10px;font-weight:700}.ship-summary .summary-total span{display:block}.report-shift{margin:16px 0;border-top:1px solid var(--line)}.pdfKpis{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.pdfKpi{flex:1;min-width:130px;border:1px solid var(--line);border-radius:10px;padding:11px;background:var(--soft)}.pdfKpi b{display:block;font-size:10px;color:var(--muted);text-transform:uppercase}.pdfKpi span{display:block;font-size:19px;font-weight:900;color:var(--strong);margin-top:3px}.pdfKpi.big{background:var(--sky);border-color:var(--sea)}.pdfAlert{border:1px solid var(--bad);background:var(--badbg);color:var(--bad);padding:11px;border-radius:10px;margin:10px 0;font-weight:700}.pdfShift{border:1px solid var(--line);border-radius:11px;margin:12px 0;overflow:hidden}.pdfShiftHead{display:flex;justify-content:space-between;gap:8px;padding:9px 12px;font-weight:800;font-size:12px;color:#fff;flex-wrap:wrap}.pdfShift.work .pdfShiftHead{background:#1c6b40}.pdfShift.nao .pdfShiftHead{background:#8a2f3c}.pdfShift.skip .pdfShiftHead{background:#5a6675}.pdfShiftBody{display:flex;gap:9px;padding:11px;flex-wrap:wrap}.pdfBox{flex:1;min-width:90px;border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center;background:var(--panel)}.pdfBox b{display:block;font-size:9.5px;color:var(--muted);text-transform:uppercase}.pdfBox span{display:block;font-size:16px;font-weight:900;color:var(--strong);margin-top:2px}.pdfEq{padding:0 12px 11px;font-size:11.5px;color:var(--muted)}.pdfShift table{margin:0 12px 12px;width:calc(100% - 24px)}.rowTotal td{font-weight:800;background:var(--sky);border-top:2px solid var(--sea)}
+.period-alert{display:flex;align-items:flex-start;gap:9px;margin:0;padding:11px 14px;border-bottom:1px solid;font-size:12.5px;font-weight:750;line-height:1.45}.period-alert.warn{background:var(--warnbg);border-color:#d7a93e;color:var(--warn)}.period-alert.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad)}.period-alert.info{background:var(--infobg);border-color:var(--info);color:var(--info)}.period-alert strong{font-weight:900}.auto-refresh{background:var(--green);color:#fff}.auto-refresh:hover{filter:brightness(1.06)}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd-left">
+    <div class="hd-logo">JBS<span>(</span></div>
+    <div><h1>Calculadora de Chamadas OGMO</h1></div>
+  </div>
+  <button class="themeBtn" id="themeBtn" onclick="toggleTheme()" title="Alternar claro/escuro">🌙 Escuro</button>
+</header>
+<div class="wrap">
+
+  <section class="card">
+    <h2>🚢 Navio e janela de atracação</h2>
+    <div class="g5">
+      <div><label>Navio / viagem</label><input id="ship" class="field" placeholder="Ex.: MAERSK LA PAZ 2612"></div>
+      <div><label>Contêineres cheios</label><input id="totFull" class="field" type="number" min="0" value="750"></div>
+      <div><label>Contêineres vazios</label><input id="totEmpty" class="field" type="number" min="0" value="950"></div>
+      <div><label>Atracação prevista</label><input id="etb" class="field" type="datetime-local"></div>
+      <div><label>Limite para desatracar</label><input id="ets" class="field" type="datetime-local"></div>
+    </div>
+    <div class="g4">
+      <div><label>Prontidão após atracar (h)</label><input id="prontidao" class="field" type="number" step="0.25" value="1"></div>
+      <div><label>Horas por turno</label><input id="horas" class="field" type="number" min="1" max="6" step="0.5" value="6"></div>
+      <div><label>Máx. de equipamentos por turno</label><input id="maxTernos" class="field" type="number" min="1" max="6" value="3"></div>
+    </div>
+    <div class="g4">
+      <div><label>Mínimo de horas para chamar terno</label><input id="minHoras" class="field" type="number" min="0" max="6" step="0.5" value="3"></div>
+      <div style="grid-column:span 3"><label>&nbsp;</label>
+        <div class="hint" style="margin:0">Como não existe meia diária, um terno chamado no fim de um turno custa o turno inteiro. Abaixo deste mínimo de horas aproveitáveis a calculadora prefere esperar o próximo turno cheio.</div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>🏗️ Guindastes</h2>
+    <div class="g5" id="fleet"></div>
+  </section>
+
+  <section class="card">
+    <h2>👷 Operadores <em>— somente o OGMO entra no custo do navio; HE aparece separadamente</em></h2>
+    <div class="g3">
+      <div class="opbox"><h4>🏗️ Guindasteiro — STS / MHC</h4>
+        <div class="mini" id="reqGuiTxt">Necessário: 1 por equipamento + 1 rendição.</div>
+        <div class="split"><label style="margin:0;flex:1">Avulsos OGMO</label><input id="oGui" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Vinculados normal</label><input id="viGui" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Vinculados HE</label><input id="qHeGui" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Tipo HE</label>
+          <select id="heGui" style="width:auto"><option value="0.5">HE 50%</option><option value="1">HE 100%</option></select></div>
+        <div class="bal" id="balGui"></div></div>
+      <div class="opbox"><h4>🚜 Operador III — empilhadeira</h4>
+        <div class="mini" id="reqOp3Txt">Necessário: 1 por terno + 1 rendição.</div>
+        <div class="split"><label style="margin:0;flex:1">Avulsos OGMO</label><input id="oOp3" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Vinculados normal</label><input id="viOp3" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Vinculados HE</label><input id="qHeOp3" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Tipo HE</label>
+          <select id="heOp3" style="width:auto"><option value="0.5">HE 50%</option><option value="1">HE 100%</option></select></div>
+        <div class="bal" id="balOp3"></div></div>
+      <div class="opbox"><h4>🚛 Terminal Tractor</h4>
+        <div class="mini">Defina a origem dos operadores do turno.</div>
+        <div class="split"><label style="margin:0;flex:1">Avulsos OGMO</label><input id="ttOGMO" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Vinculados normal</label><input id="ttVinc" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Vinculados HE</label><input id="ttHE" type="number" min="0" value="0"></div>
+        <div class="split"><label style="margin:0;flex:1">Tipo HE</label>
+          <select id="heTT" style="width:auto"><option value="0.5">HE 50%</option><option value="1">HE 100%</option></select></div>
+        <div class="bal" id="balTT"></div></div>
+    </div>
+    <div class="g4">
+
+      <div style="grid-column:span 2"><label>&nbsp;</label><div class="hint" style="margin:0" id="opHint"></div></div>
+    </div>
+    <div class="hint">O custo do navio considera <b>somente as quantidades explicitamente informadas em Avulsos OGMO</b>. Vinculado normal e HE ficam visíveis para comparação, mas não entram no total OGMO. Posições sem definição aparecem como alerta.</div>
+  </section>
+
+  <div class="tabs">
+    <button class="tab on" id="tabA" onclick="setTab('A')"><span>⚙️</span>Automático</button>
+    <button class="tab" id="tabB" onclick="setTab('B')"><span>🎛️</span>Simulador</button>
+  </div>
+
+  <div class="pane on" id="paneA">
+    <section class="card">
+      <h2>Melhores alternativas para este navio</h2>
+      <div class="bar">
+        <button class="btn big" onclick="comparar()">▶ Comparar cenários</button>
+        <button class="btn auto-refresh" onclick="comparar()">↻ Atualizar alternativas</button>
+        <button class="btn sec" onclick="window.print()">Imprimir</button>
+      </div>
+      <div class="opts" id="opts"></div>
+      <div class="leitura" id="leitura" style="display:none"></div>
+    </section>
+  </div>
+
+  <div class="pane" id="paneB">
+    <section class="card">
+      <h2>Simulador de turnos</h2><div class="bar"><button class="btn" onclick="pdfSimulador()">Salvar simulador em PDF</button><label class="pdf-option"><input type="checkbox" id="pdfDetalhes"> Incluir detalhes de todos os turnos no PDF</label></div><p class="mini">Na janela de impressão, escolha “Salvar como PDF” para gerar o arquivo e enviar.</p>
+      <div class="g4" style="margin-bottom:6px">
+        <div><label>Prioridade do plano</label><select id="prioridade" class="field">
+          <option value="custo">Priorizar custo (menor R$/mov)</option>
+          <option value="tempo">Priorizar tempo (fechar antes)</option>
+          <option value="equilibrio">Equilibrado</option></select></div>
+        <div><label>Saldo do navio a distribuir</label><input id="saldoInfo" class="field" readonly style="background:var(--soft);font-weight:800"></div>
+        <div style="grid-column:span 2"><label>&nbsp;</label>
+          <div class="bar" style="margin:0">
+            <button class="btn" onclick="addRow()">+ Turno</button>
+            <button class="btn sec" onclick="distribuir()">Distribuir saldo</button>
+            <button class="btn sec" onclick="zerarCarga()">Zerar cargas</button>
+            <button class="btn sec" onclick="limparPlano()">Remover turnos</button>
+          </div></div>
+      </div>
+      <div id="simCards"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="prog" id="prog"></div><div class="progLab" id="progLab"></div>
+      <div class="leitura" id="simRecom" style="display:none"></div><details class="ship-details" id="shipDetails"><summary>Exibir / recolher detalhes do navio inteiro</summary><div id="shipSummary"></div></details>
+    </section>
+    <details class="card shift-details"><summary>🔍 Exibir / recolher detalhe do turno <em id="detTitle"></em></summary>
+      <div class="g2">
+        <div id="detTables"></div>
+        <div><div class="rep" id="report">Selecione um turno acima.</div>
+          <div class="bar"><button class="btn sec" onclick="copiarRelatorio()">Copiar relatório</button></div></div>
+      </div>
+    </details>
+  </div>
+
+  <details class="tech" id="techDetails"><summary onclick="return techGuard(event)">🔒 Base técnica — tabelas dos acordos, encargos e custo do vinculado (protegida)</summary>
+    <div class="techbody"><div class="grp"><h3>Horário noturno</h3><div class="g2">      <div><label>Início da hora noturna</label><input id="nightIni" class="field" type="number" min="0" max="23" value="22"></div>
+      <div><label>Fim da hora noturna</label><input id="nightFim" class="field" type="number" min="0" max="23" value="5"></div></div></div><div id="tech"></div></div></details>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* =========================================================================
+   CALCULADORA DE CHAMADAS OGMO — v24
+   Motor conferido contra "Simulação Cálculo de Folha OGMO v3":
+   Estiva e Bloco batem à vírgula; Arrumador calculado por terno (sem os
+   erros de fórmula da planilha); Conferente pela CCT publicada.
+   ========================================================================= */
+const BRL=new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+const N1=new Intl.NumberFormat('pt-BR',{maximumFractionDigits:1});
+function money(x){return BRL.format(isFinite(x)?x:0);}
+function nf(x){return N1.format(isFinite(x)?x:0);}
+function clone(o){return JSON.parse(JSON.stringify(o));}
+
+const PERIODS={
+  P1:{lab:'07h00 x 13h00',ini:7, night:false},
+  P2:{lab:'13h00 x 19h00',ini:13,night:false},
+  P3:{lab:'19h00 x 01h00',ini:19,night:true},
+  P4:{lab:'01h00 x 07h00',ini:25,night:true}};
+const PKEYS=['P1','P2','P3','P4'];
+
+const FLEET_DEF=[
+  {id:'STS01',nome:'STS 01',tipo:'STS',prod:25,on:true},
+  {id:'STS02',nome:'STS 02',tipo:'STS',prod:25,on:true},
+  {id:'MHC03',nome:'MHC Liebherr 03',tipo:'MHC',prod:14,on:true},
+  {id:'MHC05',nome:'MHC Kone 05',tipo:'MHC',prod:14,on:true},
+  {id:'MHC06',nome:'MHC Kone 06',tipo:'MHC',prod:14,on:true}];
+
+/* ---- BASE TÉCNICA (editável) ---- */
+const DEF={
+  encargos:{ // sobre a MMO — conforme totalizador da folha e Taxas sindicais JBS
+    inss:0.299598, fgts:0.08, decimo:0.0834, ferias:0.1112,
+    subvEstiva:0.03, subvArrumador:0.03, subvConf:0, subvVigia:0, subvBloco:0,
+    fundoArrumador:0.03, taxaNegBloco:0, taxaConfNavio:150, taxaConfOn:true
+  },
+  cpmAlvo:0, limiteAmarelo:0.85,
+  vinc:{adicNoturno:0.20,acumulaHE:true,
+    tt:{nome:'Operador Terminal Tractor',base:22.80},
+    op3:{nome:'Operador III — Empilhadeira',base:38.15},
+    op4:{nome:'Operador IV — Guindastes',base:54.73}},
+  RT:{
+    inpc:1.0505,
+    estiva:{chD:5.13355,vzD:1.44848,chN:6.16026,vzN:1.73819,salD:191.96,salN:230.36,cota:1.5},
+    cap:{chD:5.23,vzD:1.67,chN:6.30,vzN:1.84,salD:285.19,salN:342.24,cota:1.3},
+    gui:{chD:5.23,vzD:1.67,chN:6.30,vzN:1.84,salD:267.31,salN:320.47,cota:2},
+    op3:{ch:5.64,salD:267.31,salN:320.77},
+    tt:{salD:269.58,salN:323.50,prod:2.08},
+    eqp:{chD:5.23,vzD:1.67,chN:6.30,vzN:1.84,salD:285.19,salN:342.24,cota:1.5,homens:2},
+    cf:{chD:1.73,vzD:0.49,chN:2.07,vzN:0.57,salD:285.19,salN:342.24,adicD:99.02,adicN:198.08}, cfOn:true,
+    op2:{salD:240.53,salN:298.77},
+    lacre:{salD:285.19,salN:342.24}, lacreOn:false,
+    sapata:{salD:95.60,salN:115.18,fator:1.4}, sapataOn:true, sapataQtd:5, sapataPorNavio:true,
+    conf:{cheio:23.73,vazio:3.78,salD:470.20,salN:564.25,
+          pct:{1:[51,49],2:[34,33,33],3:[26.02,24.66,24.66,24.66],4:[20.8,19.8,19.8,19.8,19.8],
+               5:[18.5,16.3,16.3,16.3,16.3,16.3],6:[17.02,13.83,13.83,13.83,13.83,13.83,13.83]}},
+    vigia:{salD:302.60,salN:444.86},
+    bloco:{corr:1.09165,salD:234.85,salN:281.82,f1D:6.53,f1N:7.85,f2D:3.00,f2N:3.57,faixa:25}
+  }
+};
+
+let P=load(),fleet=loadFleet(),rows=[],selRow=0,cenarios=[];
+function load(){try{const x=JSON.parse(localStorage.getItem('ogmo_v16')||'null');return x?deepmerge(clone(DEF),x):clone(DEF);}catch(e){return clone(DEF);}}
+function deepmerge(a,b){for(const k in b){if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])){a[k]=deepmerge(a[k]||{},b[k]);}else a[k]=b[k];}return a;}
+function loadFleet(){try{return JSON.parse(localStorage.getItem('ogmo_v16_fleet')||'null')||clone(FLEET_DEF);}catch(e){return clone(FLEET_DEF);}}
+function salvar(){try{localStorage.setItem('ogmo_v16',JSON.stringify(P));localStorage.setItem('ogmo_v16_fleet',JSON.stringify(fleet));toast('Base técnica salva neste navegador');}catch(e){toast('Navegador bloqueou o salvamento — use Exportar');}}
+function restaurar(){if(!confirm('Restaurar todos os valores originais?'))return;P=clone(DEF);fleet=clone(FLEET_DEF);try{localStorage.removeItem('ogmo_v16');localStorage.removeItem('ogmo_v16_fleet');}catch(e){}desenhaFrota();desenhaTecnica();calcular();toast('Valores originais restaurados');}
+function exportar(){const b=new Blob([JSON.stringify({params:P,fleet,plano:rows},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='base_ogmo.json';a.click();}
+function importar(i){const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(d.params)P=deepmerge(clone(DEF),d.params);if(d.fleet)fleet=d.fleet;if(d.plano)rows=d.plano;desenhaFrota();desenhaTecnica();desenhaPlano();calcular();toast('Base importada');}catch(e){toast('Arquivo inválido');}};r.readAsText(f);}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2100);}
+function v(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function s(id){return document.getElementById(id)?.value;}
+
+/* ======================= MOTOR (validado) ======================= */
+function _dia(d){return String(d||'').toUpperCase();}
+function diaEfetivo(row){if(row&&row.dia==='Feriado')return 'Feriado';if(row&&row.data){const d=new Date(row.data+'T12:00:00');if(!isNaN(d)&&d.getDay()===0)return 'Domingo';}return row&&row.dia?row.dia:'Normal';}
+const mdEstiva=d=>_dia(d)==='DOMINGO'?1.5:_dia(d)==='FERIADO'?2:1;
+const mdConf  =d=>_dia(d)==='DOMINGO'?1.5:_dia(d)==='FERIADO'?2:1;
+const mdVigia =d=>_dia(d)==='DOMINGO'?1.7:_dia(d)==='FERIADO'?2:1;
+
+function calcEstiva(ternos,night,dia){
+  if(!ternos.length)return{total:0,tpas:0,linhas:[],sal:0,prod:0};
+  const R=P.RT.estiva,K=P.RT.inpc||1,ch=(night?R.chN:R.chD)*K,vz=(night?R.vzN:R.vzD)*K,sal=(night?R.salN:R.salD)*K,md=mdEstiva(dia);
+  const M=sal*R.cota;
+  const Lc=ternos.map(t=>(t.cheio*ch+t.vazio*vz)*R.cota);
+  const media=Lc.reduce((a,b)=>a+b,0)/Lc.length;
+  const CMG=Math.max(Math.max(...Lc),M),val=Math.max(M,media);
+  const linhas=[{f:'Contramestre Geral',q:1,unit:CMG*md,tot:CMG*md,sal:M*md,prod:CMG*md}];
+  let tpas=1,tot=CMG,salT=M,prodT=CMG;
+  ternos.forEach((t,i)=>{
+    ['Contramestre de Porão','Portaló'].forEach(nm=>{linhas.push({f:`${nm} · T${i+1}`,q:1,unit:val*md,tot:val*md,sal:M*md,prod:media*md});});
+    linhas.push({f:`Lingada · T${i+1}`,q:4,unit:val*md,tot:val*4*md,sal:M*md,prod:media*md});
+    tot+=val*6;tpas+=6;salT+=M*6;prodT+=media*6;
+  });
+  return{total:tot*md,tpas,linhas,sal:salT*md,prod:prodT*md};
+}
+function calcArrumador(ternos,night,dia,mix){
+  if(!ternos.length)return{total:0,tpas:0,linhas:[]};
+  const R=P.RT,K=P.RT.inpc||1,md=mdEstiva(dia),linhas=[];let tot=0,tpas=0;
+  const cch=(night?R.cap.chN:R.cap.chD)*K,cvz=(night?R.cap.vzN:R.cap.vzD)*K,csal=(night?R.cap.salN:R.cap.salD)*K;
+  const cap=Math.max(Math.max(...ternos.map(t=>(t.cheio*cch+t.vazio*cvz)*R.cap.cota)),csal*R.cap.cota)*md;
+  linhas.push({f:'Capataz / Rendição',q:1,unit:cap,tot:cap});tot+=cap;tpas++;
+
+  const gch=(night?R.gui.chN:R.gui.chD)*K,gvz=(night?R.gui.vzN:R.gui.vzD)*K,gsal=(night?R.gui.salN:R.gui.salD)*K;
+  const gvals=ternos.map(t=>Math.max((t.cheio*gch+t.vazio*gvz)*R.gui.cota,gsal*R.gui.cota)*md);
+  const o3sal=(night?R.op3.salN:R.op3.salD)*K,o3ch=R.op3.ch*K;
+  const ech=(night?R.eqp.chN:R.eqp.chD)*K,evz=(night?R.eqp.vzN:R.eqp.vzD)*K,ecota=R.eqp.cota||1,episo=(night?R.eqp.salN:R.eqp.salD)*K*ecota;
+  const fch=(night?R.cf.chN:R.cf.chD)*K,fvz=(night?R.cf.vzN:R.cf.vzD)*K,fsal=(night?R.cf.salN:R.cf.salD)*K;
+  const o2sal=(night?R.op2.salN:R.op2.salD)*K,lacreSal=(night?R.lacre.salN:R.lacre.salD)*K,sapSal=(night?R.sapata.salN:R.sapata.salD)*K*(R.sapata.fator||1);
+  const eqpH=R.eqp.homens||2,sapQ=R.sapataQtd||5;
+
+  let guiOgmo=Math.max(0,mix?.guiOgmo||0),op3Ogmo=Math.max(0,mix?.op3Ogmo||0);
+  const o3vals=ternos.map(t=>((t.cheio+t.vazio)*o3ch+o3sal));
+
+  ternos.forEach((t,i)=>{
+    if(guiOgmo>0){
+      guiOgmo--;
+      const g=gvals[i];
+      linhas.push({f:`Guindasteiro · T${i+1}`,q:1,unit:g,tot:g});tot+=g;tpas++;
+    }
+    if(op3Ogmo>0){
+      op3Ogmo--;
+      const pr=o3vals[i]*md;
+      linhas.push({f:`Operador III · T${i+1}`,q:1,unit:pr,tot:pr});tot+=pr;tpas++;
+    }
+
+    const eq=Math.max((t.cheio*ech+t.vazio*evz)*ecota,episo)*md;
+    linhas.push({f:`Equipe Navio · T${i+1}`,q:eqpH,unit:eq,tot:eq*eqpH});tot+=eq*eqpH;tpas+=eqpH;
+
+    if(R.cfOn){
+      // Validado contra NORDCHEETAH: adicional por pessoa = (salário + produção) / 2
+      const cfv=((t.cheio*fch+t.vazio*fvz)+fsal)/2*md;
+      linhas.push({f:`CF Navio/Pátio · T${i+1}`,q:eqpH,unit:cfv,tot:cfv*eqpH,adic:true});tot+=cfv*eqpH;
+    }
+
+    if(i===0){
+      const o2=o2sal*md;
+      linhas.push({f:'Operador II Navio',q:1,unit:o2,tot:o2,adic:true});tot+=o2;tpas++;
+    }
+    if(R.lacreOn){const lc=lacreSal*md;linhas.push({f:`Conferente Lacre · T${i+1}`,q:1,unit:lc,tot:lc,adic:true});tot+=lc;tpas++;}
+  });
+
+  // Um guindasteiro por equipamento e uma rendição compartilhada por turno.
+  // A rendição usa o terno de maior produção, como a do Operador III.
+  if(guiOgmo>0&&gvals.length){
+    const g=Math.max(...gvals);
+    linhas.push({f:'Rendição de Guindasteiro',q:1,unit:g,tot:g});tot+=g;tpas++;guiOgmo--;
+  }
+
+  // Rendição do Operador III usa o terno de maior produção, quando a posição for OGMO.
+  if(op3Ogmo>0&&o3vals.length){
+    const pr=Math.max(...o3vals)*md;
+    linhas.push({f:'Rendição de Operador III',q:1,unit:pr,tot:pr});tot+=pr;tpas++;op3Ogmo--;
+  }
+
+  if(R.sapataOn&&sapQ>0){
+    const sp=sapSal*md;
+    linhas.push({f:'Adicional de Sapata',q:sapQ,unit:sp,tot:sp*sapQ,adic:true});tot+=sp*sapQ;
+  }
+  return{total:tot,tpas,linhas};
+}
+
+function calcTTOGMO(q,night,dia,movs){
+  if(q<=0)return{total:0,tpas:0,linhas:[]};
+  const R=P.RT.tt,md=mdEstiva(dia),sal=night?R.salN:R.salD;
+  const total=(q*sal + Math.max(0,movs)*R.prod)*md;
+  const unit=total/q;
+  return{total,tpas:q,linhas:[{f:'Operador Terminal Tractor · OGMO',q,unit,tot:total}]};
+}
+function calcConf(ternos,night,dia,shared){
+  if(!ternos.length)return{total:0,tpas:0,linhas:[]};
+  const R=P.RT.conf,n=ternos.length,md=mdConf(dia);
+  const ch=ternos.reduce((a,t)=>a+t.cheio,0),vz=ternos.reduce((a,t)=>a+t.vazio,0);
+  const bolo=ch*R.cheio+vz*R.vazio,sal=night?R.salN:R.salD;
+  const pcts=R.pct[n]||[17.02].concat(Array(n).fill((100-17.02)/n));
+  const linhas=[];let tot=0;
+  // Folhas reais: chefe compartilhado recebe RAT de 10%; planistas recebem RAT.
+  // Sem compartilhamento, o chefe participa normalmente do box-rate.
+  pcts.forEach((p,i)=>{
+    if(i===0&&shared){const pago=sal*0.10*md;linhas.push({f:'Conferente Chefe/Rendição · RAT compartilhado',q:1,unit:pago,tot:pago});tot+=pago;return;}
+    const base=Math.max(bolo*p/100,sal)*md;
+    let rat=0;
+    if(i>0){
+      // padrão observado nos demonstrativos: 25% quando chefe exclusivo e 45% quando compartilhado
+      rat=sal*(shared?0.45:0.25)*md;
+    }
+    const pago=base+rat;
+    linhas.push({f:i===0?'Conferente Chefe/Rendição':`Conferente Planista/Lingada ${i}`,q:1,unit:pago,tot:pago,rat});tot+=pago;
+  });
+  return{total:tot,tpas:n+1,linhas};
+}
+
+function calcVigia(active,night,dia){
+  if(!active)return{total:0,tpas:0,linhas:[]};
+  const K=P.RT.inpc||1;
+  const md=mdVigia(dia),sv=(night?P.RT.vigia.salN:P.RT.vigia.salD)*K*md;
+  return{total:sv,tpas:1,linhas:[{f:'Portaló (Vigia)',q:1,unit:sv,tot:sv}]};
+}
+function calcBloco(ternos,night,dia){
+  if(!ternos.length)return{total:0,tpas:0,linhas:[]};
+  const R=P.RT.bloco,md=mdEstiva(dia);
+  const sal=(night?R.salN:R.salD)*R.corr,f1=(night?R.f1N:R.f1D)*R.corr,f2=(night?R.f2N:R.f2D)*R.corr;
+  const linhas=[];let tot=0;
+  ternos.forEach((t,i)=>{
+    const m=t.cheio+t.vazio;
+    const prod=m<=R.faixa?m*f1:R.faixa*f1+(m-R.faixa)*f2;
+    const pago=Math.max(prod,sal);
+    linhas.push({f:`Equipe Bloco · T${i+1}`,q:2,unit:pago*md,tot:pago*2*md});tot+=pago*2;
+  });
+  return{total:tot*md,tpas:ternos.length*2,linhas};
+}
+
+/* encargos sobre a MMO de cada categoria */
+function encargosCat(mmo,cat){
+  const E=P.encargos, base13=mmo*E.decimo, baseFer=mmo*E.ferias, baseInssFgts=mmo+base13+baseFer;
+  const subv={estiva:E.subvEstiva,arrumador:E.subvArrumador,conferente:E.subvConf,vigia:E.subvVigia,bloco:E.subvBloco}[cat]||0;
+  const subvVal=(mmo+base13+baseFer)*subv;
+  const fundo=cat==='arrumador'?(mmo+base13+baseFer)*E.fundoArrumador:0;
+  const taxaNeg=cat==='bloco'?(mmo+base13+baseFer)*E.taxaNegBloco:0;
+  const inss=baseInssFgts*E.inss, fgts=baseInssFgts*E.fgts;
+  return {decimo:base13,ferias:baseFer,inss,fgts,subv:subvVal,fundo,taxaNeg,
+          total:mmo+base13+baseFer+inss+fgts+subvVal+fundo+taxaNeg};
+}
+
+/* horas noturnas do turno para o vinculado */
+function horasNoturnas(per,horas,offset){
+  const ini=PERIODS[per].ini+(offset||0),fim=ini+horas;
+  const a=v('nightIni')||22,b=v('nightFim')||5,wI=a,wF=b<=a?b+24:b;let ov=0;
+  [-24,0,24].forEach(k=>{ov+=Math.max(0,Math.min(fim,wF+k)-Math.max(ini,wI+k));});
+  return Math.min(horas,ov);
+}
+function calcVinculados(per,horas,offset,qOp3,qGui,qTT,heOp3,heGui,heTT){
+  const linhas=[],V=P.vinc,hN=horasNoturnas(per,horas,offset),hD=horas-hN;
+  const add=(cfg,q,he,lab)=>{if(q<=0)return;const f=1+(V.acumulaHE?(he||0):0),r1=cfg.base*f,r2=cfg.base*f*(1+V.adicNoturno);
+    const unit=hD*r1+hN*r2;linhas.push({f:cfg.nome+(lab?' ('+lab+')':''),q,unit,tot:unit*q,hD,hN,vinc:true});};
+  add(V.op3,qOp3,heOp3,'vinculado');add(V.op4,qGui,heGui,'vinculado');add(V.tt,qTT,heTT,'vinculado');
+  const total=linhas.reduce((a,l)=>a+l.tot,0);
+  return{total,tpas:0,linhas};
+}
+
+/* ---- cálculo de um turno inteiro (ternos com carga própria) ---- */
+function ternosDoTurno(row){
+  const naoOperou=row.operou===false;
+  return row.ternos.filter(t=>t.on!==false).map((t,i)=>{
+    const f=fleet.find(x=>x.id===t.eq)||{tipo:'MHC',nome:'T'+(i+1)};
+    return {cheio:naoOperou?0:(+t.cheio||0),vazio:naoOperou?0:(+t.vazio||0),tipo:f.tipo,nome:f.nome,eq:t.eq,
+            gui:true, opIII:true, rendOpIII:i===0, sapata:t.sapata||0};
+  });
+}
+function calcTurno(row){
+  const night=PERIODS[row.per].night,horasPad=v('horas')||6,diaCalc=diaEfetivo(row);
+  const horas=row.horas||horasPad,offset=horasPad-horas>0?(horasPad-horas):0;
+  const naoOperou=row.operou===false;
+  const ternos=ternosDoTurno(row);
+  const n=ternos.length;
+  const movs=ternos.reduce((a,t)=>a+t.cheio+t.vazio,0);
+  const capac=ternos.reduce((a,t)=>{const f=fleet.find(x=>x.id===t.eq);return a+(f?f.prod:14);},0)*horas;
+  const out={n,capac,horas,ternos,naoOperou,linhas:{},avulso:0,vinc:0,total:0,tpas:0,movs,cpm:0,cheio:0};
+  const qTTOGMO=v('ttOGMO'),qTTVinc=v('ttVinc'),qTTHE=v('ttHE');
+  /* turno chamado que não operou: paga só o piso (ternos com carga zero) */
+  if(!n){
+    const g0=calcVigia(row.vigia!==false,night,diaCalc);
+    if(g0.total>0){out.linhas['Vigia']=g0;out.tpas+=g0.tpas;}
+    let ttV0=0,ttHE0=0;
+    if(!naoOperou){
+      if(qTTVinc>0){const w0=calcVinculados(row.per,horas,offset,0,0,qTTVinc,0,0,0);out.linhas['Vinculados normais (fora OGMO)']=w0;ttV0=w0.total;}
+      if(qTTHE>0){const h0=calcVinculados(row.per,horas,offset,0,0,qTTHE,0,0,parseFloat(s('heTT'))||0.5);out.linhas['Hora extra (fora OGMO)']=h0;ttHE0=h0.total;}
+    }
+    const ttO0=calcTTOGMO(qTTOGMO,night,diaCalc,0);
+    if(ttO0.total)out.linhas['Arrumador (Terminal Tractor OGMO)']=ttO0;
+    out.vinc=ttV0;out.he=ttHE0;
+    out.avulsoMMO=g0.total+ttO0.total;
+    const enc0=(encargosCat(g0.total,'vigia').total-g0.total)+(encargosCat(ttO0.total,'arrumador').total-ttO0.total);
+    out.encargos=enc0;out.avulso=out.avulsoMMO+enc0;out.total=out.avulso;out.cheio=out.total;out.tpas+=ttO0.tpas;
+    return out;
+  }
+  /* operadores: somente o que foi explicitamente chamado no OGMO entra no custo do navio */
+  const reqGui=n+1, reqOp3=n+1;
+  const ogGui=Math.min(v('oGui'),reqGui), ogOp3=Math.min(v('oOp3'),reqOp3);
+  const heGuiQtd=Math.min(v('qHeGui'),Math.max(0,reqGui-ogGui));
+  const heOp3Qtd=Math.min(v('qHeOp3'),Math.max(0,reqOp3-ogOp3));
+  const viGuiQtd=Math.min(v('viGui'),Math.max(0,reqGui-ogGui-heGuiQtd));
+  const viOp3Qtd=Math.min(v('viOp3'),Math.max(0,reqOp3-ogOp3-heOp3Qtd));
+  out.mix={reqGui,ogGui,heGui:heGuiQtd,viGui:viGuiQtd,semGui:Math.max(0,reqGui-ogGui-heGuiQtd-viGuiQtd),reqOp3,ogOp3,heOp3:heOp3Qtd,viOp3:viOp3Qtd,semOp3:Math.max(0,reqOp3-ogOp3-heOp3Qtd-viOp3Qtd)};
+  const heOp3=parseFloat(s('heOp3'))||0.5,heGui=parseFloat(s('heGui'))||0.5,heTT=parseFloat(s('heTT'))||0.5;
+
+  /* Turno chamado que NÃO operou: os ternos já vêm com carga zero, então todas as
+     categorias caem no piso salarial — é exatamente o que a folha do OGMO paga. */
+  const e=calcEstiva(ternos,night,diaCalc);
+  const a=calcArrumador(ternos,night,diaCalc,{guiOgmo:ogGui,op3Ogmo:ogOp3});
+  const ttO=calcTTOGMO(qTTOGMO,night,diaCalc,movs);
+  if(ttO.total){a.total+=ttO.total;a.tpas+=ttO.tpas;a.linhas.push(...ttO.linhas);}
+  const c=calcConf(ternos,night,diaCalc,row.confShared===true);
+  const g=calcVigia(row.vigia!==false,night,diaCalc);
+  const b=calcBloco(ternos,night,diaCalc);
+  const wHE=naoOperou?{total:0,tpas:0,linhas:[]}:calcVinculados(row.per,horas,offset,heOp3Qtd,heGuiQtd,qTTHE,heOp3,heGui,heTT);
+  const wNormal=naoOperou?{total:0,tpas:0,linhas:[]}:calcVinculados(row.per,horas,offset,viOp3Qtd,viGuiQtd,qTTVinc,0,0,0);
+
+  out.linhas={'Estiva':e,'Arrumador (capatazia)':a,'Conferentes':c};
+  if(g.total>0)out.linhas['Vigia']=g;
+  out.linhas['Bloco']=b;
+  if(wHE.linhas.length)out.linhas['Hora extra (fora OGMO)']=wHE;
+  if(wNormal.linhas.length)out.linhas['Vinculados normais (fora OGMO)']=wNormal;
+  out.mmoEstiva=e.total;out.mmoArr=a.total;out.mmoConf=c.total;out.mmoVigia=g.total;out.mmoBloco=b.total;
+  out.avulsoMMO=e.total+a.total+c.total+g.total+b.total;
+  out.he=wHE.total;out.vinc=wNormal.total;
+  /* encargos por categoria */
+  const enc=encargosCat(e.total,'estiva').total-e.total
+           +encargosCat(a.total,'arrumador').total-a.total
+           +encargosCat(c.total,'conferente').total-c.total
+           +encargosCat(g.total,'vigia').total-g.total
+           +encargosCat(b.total,'bloco').total-b.total;
+  out.encargos=enc;
+  out.taxaConf=0;
+  out.avulso=out.avulsoMMO+enc;
+  out.total=out.avulso;
+  out.cheio=out.total;
+  out.tpas=e.tpas+a.tpas+c.tpas+g.tpas+b.tpas;
+  out.sal=e.sal||0;out.prod=e.prod||0;
+  out.cpm=movs>0?out.total/movs:0;
+  return out;
+}
+function fmtDate(d){return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);}
+function fmtDT(d){const p=n=>String(n).padStart(2,'0');return p(d.getDate())+'/'+p(d.getMonth()+1)+' '+p(d.getHours())+'h'+p(d.getMinutes());}
+function diaPorto(dt){const d=new Date(dt);if(d.getHours()<7)d.setDate(d.getDate()-1);d.setHours(7,0,0,0);return d;}
+function gerarSlots(ready,qtd){
+  const base=diaPorto(ready),out=[];
+  for(let k=0;k<qtd;k++){
+    const off=Math.floor(k/4),pi=k%4,per=PKEYS[pi];
+    const start=new Date(base.getTime()+(off*24+PERIODS[per].ini-7)*36e5);
+    const dataPorto=new Date(base.getTime()+off*864e5);
+    const fim=new Date(start.getTime()+6*36e5);
+    if(fim<=ready)continue;
+    const disp=Math.min(6,(fim-Math.max(start,ready))/36e5);
+    out.push({per,start,fim,disp,data:fmtDate(dataPorto),dia:dataPorto.getDay()===0?'Domingo':'Normal'});
+  }
+  return out;
+}
+function subsets(a,max){const o=[];for(let m=1;m<(1<<a.length);m++){const sub=a.filter((_,i)=>m&(1<<i));if(sub.length<=max)o.push(sub);}return o.sort((x,y)=>x.length-y.length);}
+const PADROES=[
+  {id:'24h',nome:'Todos os turnos',per:['P1','P2','P3','P4']},
+  {id:'semP4',nome:'Sem a madrugada',per:['P1','P2','P3']},
+  {id:'diurno',nome:'Somente diurno',per:['P1','P2']},
+  {id:'manha',nome:'Um turno por dia',per:['P1']},
+  {id:'tarde',nome:'Tarde e noite',per:['P2','P3']}];
+
+function reparte(total,sub,somaProd){
+  const arr=sub.map(f=>Math.floor(total*f.prod/somaProd));
+  let resto=Math.round(total)-arr.reduce((a,b)=>a+b,0);
+  for(let i=0;resto>0&&i<arr.length;i++,resto--)arr[i]++;
+  return arr;
+}
+function montaRow(sub,per,dia,data,horas,cheios,vazios){
+  const somaProd=sub.reduce((a,f)=>a+f.prod,0)||1;
+  const cs=reparte(cheios,sub,somaProd),zs=reparte(vazios,sub,somaProd);
+  const ternos=sub.map((f,i)=>({eq:f.id,on:true,cheio:cs[i],vazio:zs[i],sapata:1}));
+  return {operar:true,data,per,dia,horas,ternos};
+}
+function simular(slots,esperaCheio,pad,sub,horasPad,efic,limite){
+  let rc=v('totFull'),rv=v('totEmpty');
+  const capH=sub.reduce((a,f)=>a+f.prod,0)*efic;if(capH<=0)return null;
+  const plano=[];let custo=0,avulso=0,vinc=0,he=0,tpas=0,pulados=0,fim=null,ini=null,iniParcial=false;
+  for(const sl of slots){
+    if(rc+rv<=0.001)break;
+    if(!pad.per.includes(sl.per)){if(plano.length)pulados++;continue;}
+    const horas=Math.min(horasPad,sl.disp);if(horas<=0.51)continue;
+    /* não vale chamar terno para um resto de turno curto: paga-se o turno cheio */
+    const minH=v('minHoras')||0;
+    if(!plano.length&&horas<minH-0.01){pulados++;continue;}
+    if(!plano.length&&esperaCheio&&horas<horasPad-0.01){pulados++;continue;}
+    const cap=capH*horas,mov=Math.min(rc+rv,cap);
+    let c,z;
+    if(mov>=rc+rv-0.001){c=Math.round(rc);z=Math.round(rv);}
+    else{const prop=rc/(rc+rv);c=Math.min(Math.round(mov*prop),Math.round(rc));z=Math.min(Math.round(mov)-c,Math.round(rv));}
+    if(c+z<=0)continue;
+    const row=montaRow(sub,sl.per,sl.dia,sl.data,horas,c,z);
+    const r=calcTurno(row);
+    plano.push({row,res:r,parcial:horas<horasPad-0.01});custo+=r.total;avulso+=r.avulso;vinc+=r.vinc||0;he+=r.he||0;tpas+=r.tpas;
+    rc-=c;rv-=z;
+    if(!ini){ini=new Date(sl.fim.getTime()-horas*36e5);iniParcial=horas<horasPad-0.01;}
+    fim=new Date(sl.fim.getTime()-horas*36e5+Math.min(horas,(c+z)/capH)*36e5);
+  }
+  if(rc+rv>0.001||!plano.length)return null;
+  if(P.encargos.taxaConfOn){custo+=P.encargos.taxaConfNavio;avulso+=P.encargos.taxaConfNavio;}
+  const viavel=!limite||fim<=limite;
+  return {plano,custo,avulso,vinc,he,tpas,pulados,ini,fim,iniParcial,viavel,sub,pad,esperaCheio,
+          cpm:custo/(v('totFull')+v('totEmpty')||1),turnos:plano.length,horasNavio:(fim-ini)/36e5,
+          chave:pad.id+'|'+sub.map(x=>x.id).join('')+'|'+(esperaCheio?'E':'A')};
+}
+function comparar(){
+  const disp=fleet.filter(f=>f.on);
+  if(!disp.length){toast('Nenhum equipamento na frota');return;}
+  if(v('totFull')+v('totEmpty')<=0){toast('Informe a carga do navio');return;}
+  if(!s('etb')){toast('Informe a atracação');return;}
+  const ready=new Date(new Date(s('etb')).getTime()+v('prontidao')*36e5);
+  const limite=s('ets')?new Date(s('ets')):null;
+  const slots=gerarSlots(ready,56),horasPad=v('horas')||6,efic=1;
+  const combos=subsets(disp,Math.min(v('maxTernos')||1,disp.length));
+  const vistos={},lista=[];
+  [false,true].forEach(esp=>PADROES.forEach(pad=>combos.forEach(sub=>{
+    const c=simular(slots,esp,pad,sub,horasPad,efic,limite);
+    if(c&&!vistos[c.chave]){vistos[c.chave]=1;lista.push(c);}
+  })));
+  cenarios=lista;desenhaCenarios(limite);
+}
+function trio(pool){
+  const barata=pool.slice().sort((a,b)=>a.custo-b.custo||a.fim-b.fim)[0];
+  const rapida=pool.slice().sort((a,b)=>a.fim-b.fim||a.custo-b.custo)[0];
+  const cs=pool.map(c=>c.custo),ts=pool.map(c=>+c.fim);
+  const nC=x=>(Math.max(...cs)-Math.min(...cs))?(x-Math.min(...cs))/(Math.max(...cs)-Math.min(...cs)):0;
+  const nT=x=>(Math.max(...ts)-Math.min(...ts))?(x-Math.min(...ts))/(Math.max(...ts)-Math.min(...ts)):0;
+  const score=c=>nC(c.custo)+nT(+c.fim);
+  const vis=c=>Math.round(c.custo)+'|'+c.pad.id;
+  const dif=c=>vis(c)!==vis(barata)&&vis(c)!==vis(rapida);
+  const ord=pool.slice().sort((a,b)=>score(a)-score(b));
+  let meia=ord.find(dif);
+  if(barata.chave===rapida.chave){
+    const alt=ord.find(c=>vis(c)!==vis(barata));
+    return {barata,rapida:alt||barata,meia:meia||alt||barata};
+  }
+  if(!meia)meia=ord.find(c=>vis(c)!==vis(barata)&&vis(c)!==vis(rapida))||ord.find(c=>c.chave!==barata.chave)||barata;
+  return {barata,rapida,meia};
+}
+function desenhaCenarios(limite){
+  const box=document.getElementById('opts'),lei=document.getElementById('leitura');
+  const viaveis=cenarios.filter(c=>c.viavel),pool=viaveis.length?viaveis:cenarios;
+  if(!pool.length){box.innerHTML='<div class="hint">Nenhum cenário fechou o navio. Reveja frota, carga ou janela.</div>';lei.style.display='none';return;}
+  const {barata,rapida,meia}=trio(pool);
+  const esc=[{c:barata,cls:'cheap',ico:'💰',tit:'Mais barata'},{c:rapida,cls:'fast',ico:'⚡',tit:'Mais rápida'},{c:meia,cls:'mid',ico:'⚖️',tit:'Equilibrada'}];
+  box.innerHTML=esc.map((o,i)=>cardCenario(o,barata,rapida,i,limite)).join('');
+  lei.style.display='block';
+  const vis=c=>Math.round(c.custo)+'|'+c.pad.id;
+  let nota='';
+  if(vis(barata)===vis(rapida))nota='<br><b>Obs.:</b> neste navio o mesmo plano é ao mesmo tempo o mais barato e o mais rápido — as opções convergem.';
+  else if(vis(meia)===vis(barata)||vis(meia)===vis(rapida))nota='<br><b>Obs.:</b> há só dois planos distintos na janela; a equilibrada coincide com um deles.';
+  lei.innerHTML=montarLeitura(pool,barata,rapida,meia,limite)+nota;
+}
+function timelineCenario(c){
+  const mapa={};c.plano.forEach(p=>{mapa[p.row.data+'|'+p.row.per]=p;});
+  if(!c.plano.length)return '';
+  const ini=new Date(c.plano[0].row.data+'T07:00:00'),fim=new Date(c.plano[c.plano.length-1].row.data+'T07:00:00');
+  fim.setDate(fim.getDate()+1);
+  let html='';
+  for(let d=new Date(ini);d<fim;d.setHours(d.getHours()+6)){
+    let per='P1';
+    if(d.getHours()===7)per='P1';else if(d.getHours()===13)per='P2';else if(d.getHours()===19)per='P3';else if(d.getHours()===1)per='P4';
+    const data=fmtDate(d.getHours()<7?new Date(d.getTime()-864e5):d);
+    const p=mapa[data+'|'+per];
+    const night=PERIODS[per].night, ico=night?'🌙':'☀️';
+    if(p){
+      const mv=p.res.movs, nt=p.res.n;
+      html+=`<div class="periodoBox work"><span class="pbTop">${ico} TRABALHA${p.parcial?' · parcial':''}</span>
+        <small>${data.slice(8)}/${data.slice(5,7)} · ${PERIODS[per].lab}</small>
+        <em>${nf(mv)} mov · ${nt} terno${nt>1?'s':''}</em></div>`;
+    } else {
+      html+=`<div class="periodoBox skip"><span class="pbTop">${ico} PULA</span>
+        <small>${data.slice(8)}/${data.slice(5,7)} · ${PERIODS[per].lab}</small>
+        <em>sem requisição</em></div>`;
+    }
+  }
+  return `<div class="periodos">${html}</div>`;
+}
+function uxEscape(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function movimentosCenario(c){
+  return '<div class="auto-moves"><h3>Movimentações sugeridas</h3><div class="mini">Por turno e equipamento · cheios / vazios</div>'+c.plano.map((p,i)=>{
+    const r=p.row;
+    return '<details class="auto-shift" '+(i===0?'open':'')+'><summary>'+uxEscape(r.data.slice(8)+'/'+r.data.slice(5,7)+' · '+PERIODS[r.per].lab)+'</summary><div class="auto-ternos">'+r.ternos.map((t,j)=>{
+      const f=fleet.find(f=>f.id===t.eq);
+      return '<div class="sc-terno"><div class="sc-crane">T'+(j+1)+' · '+uxEscape(f?f.nome:t.eq)+'</div><div class="cv cheio"><span>CHEIOS</span><strong>'+nf(t.cheio)+'</strong></div><div class="cv vazio"><span>VAZIOS</span><strong>'+nf(t.vazio)+'</strong></div></div>';
+    }).join('')+'</div></details>';
+  }).join('')+'</div>';
+}
+
+function cardCenario(o,barata,rapida,i,limite){
+  const c=o.c,dC=c.custo-barata.custo,dT=(c.fim-rapida.fim)/36e5;
+  const seq=timelineCenario(c);
+  return `<div class="opt ${o.cls==='cheap'?'win':''}">
+    <div class="rib ${o.cls}"><span>${o.ico} ${o.tit}</span><span>${c.pad.nome}</span></div>
+    <div class="bd"><div class="big">${money(c.custo)}</div><div class="mini">${money(c.cpm)} por movimento</div>
+      <dl><dt>Equipamentos</dt><dd>${c.sub.map(x=>x.nome).join(', ')}</dd>
+        <dt>Início</dt><dd>${fmtDT(c.ini)}${c.iniParcial?' (parcial)':''}</dd>
+        <dt>Término</dt><dd>${fmtDT(c.fim)}</dd>
+        <dt>Navio no berço</dt><dd>${nf(c.horasNavio)} h</dd>
+        <dt>Turnos</dt><dd>${c.turnos}${c.pulados?' · '+c.pulados+' pulado(s)':''}</dd>
+        <dt>Mão de obra avulsa</dt><dd>${money(c.avulso)}</dd>
+        <dt>HE estimada (fora OGMO)</dt><dd>${money(c.he||0)}</dd>
+        <dt>Engajamentos TPA</dt><dd>${c.tpas}</dd></dl>
+      <div class="seq">${seq}</div>
+      <div class="delta">${dC>0?'Custa '+money(dC)+' a mais que a mais barata. ':'É a mais barata. '}${dT>0.1?'Termina '+nf(dT)+'h depois da mais rápida.':'Também é a que termina antes.'}${limite&&!c.viavel?'<br><b style="color:#9b1c1c">Estoura a janela.</b>':''}</div></div>
+    ${movimentosCenario(c)}
+    <div class="foot"><button class="btn" style="width:100%" onclick="usarCenario(${i})">Usar no simulador</button><button class="btn sec" style="width:100%;margin-top:8px" onclick="pdfCenario(${i})">Salvar alternativa em PDF</button></div></div>`;
+}
+function montarLeitura(pool,barata,rapida,meia,limite){
+  const agora=pool.filter(c=>!c.esperaCheio&&c.iniParcial).sort((a,b)=>a.custo-b.custo)[0];
+  const espera=pool.filter(c=>!c.iniParcial).sort((a,b)=>a.custo-b.custo)[0];
+  const L=[`<b>Leitura da janela.</b> Simulados ${pool.length} arranjos de equipamento e padrão de turnos.`];
+  if(agora&&espera){const dC=agora.custo-espera.custo,dT=(espera.fim-agora.fim)/36e5,hIni=agora.plano[0].row.horas;
+    const ganho=dT>0.1?`adianta o término em ${nf(dT)}h`:(dT<-0.1?`e o término fica praticamente igual`:`sem adiantar o término`);
+    if(dC>0)L.push(` <b>Começar já</b> rende só ${nf(hIni)}h mas paga o turno cheio: ${money(dC)} mais caro e ${ganho}. ${dT<3?'Em geral não compensa — melhor aguardar o próximo turno cheio.':'Só compensa se essas horas de berço forem críticas.'}`);
+    else L.push(` <b>Começar já</b> aproveita as ${nf(hIni)}h do turno em andamento e sai ${money(-dC)} mais barato do que esperar o próximo turno cheio.`);
+  } else if(espera) L.push(' Não há turno parcial aproveitável antes do próximo turno cheio.');
+  /* vale a pena chamar o terno no pedaço de turno que sobrou? */
+  const pc=barata.plano.find(p=>p.parcial);
+  if(pc){
+    const mv=pc.res.movs, cst=pc.res.total, cpmP=mv>0?cst/mv:0;
+    const cheios=barata.plano.filter(p=>!p.parcial);
+    const cpmC=cheios.length?cheios.reduce((a,p)=>a+p.res.total,0)/Math.max(1,cheios.reduce((a,p)=>a+p.res.movs,0)):0;
+    L.push(` <b>Turno parcial:</b> o pedaço de ${nf(pc.row.horas)}h move ${nf(mv)} contêineres e custa ${money(cst)} — ${money(cpmP)} por movimento, contra ${money(cpmC)} nos turnos cheios.`+
+      (cpmC>0&&cpmP>cpmC*1.3?` Como o terno é pago por turno inteiro, esse pedaço sai <b>${Math.round((cpmP/cpmC-1)*100)}% mais caro por contêiner</b> — só chame se precisar liberar o berço.`:` O aproveitamento está aceitável.`));
+  }
+  if(barata.pad.id!==rapida.pad.id){const dC=rapida.custo-barata.custo,dT=(barata.fim-rapida.fim)/36e5;
+    L.push(` <b>Pular turnos compensa:</b> em ${barata.pad.nome.toLowerCase()} o custo cai ${money(dC)} contra emendar tudo, ao preço de ${nf(dT)}h a mais de berço.`);
+  } else L.push(` O padrão ${barata.pad.nome.toLowerCase()} é o mais barato e o mais rápido — não há ganho em pular turnos.`);
+  if(limite){const folga=(limite-barata.fim)/36e5;
+    L.push(folga>=0?` A mais barata termina com ${nf(folga)}h de folga antes do limite.`:` <b style="color:#9b1c1c">Atenção:</b> a mais barata passa do limite em ${nf(-folga)}h.`);}
+  L.push(` À noite as taxas e pisos sobem ~20% e domingo entra com +50% (feriados +100%) — daí a diferença entre os padrões.`);
+  return L.join('');
+}
+function usarCenario(i){
+  const viaveis=cenarios.filter(x=>x.viavel),pool=viaveis.length?viaveis:cenarios;
+  const {barata,rapida,meia}=trio(pool);const alvo=[barata,rapida,meia][i];
+  rows=alvo.plano.map(p=>{const r=clone(p.row);r.operou=true;r.open=true;return r;});selRow=0;desenhaPlano();calcular();setTab('B');toast('Plano carregado no simulador');
+}
+
+/* ============================ INTERFACE ============================ */
+function setTab(t){['A','B'].forEach(k=>{document.getElementById('tab'+k).classList.toggle('on',k===t);document.getElementById('pane'+k).classList.toggle('on',k===t);});}
+function desenhaFrota(){
+  document.getElementById('fleet').innerHTML=fleet.map((f,i)=>`
+   <div class="crane ${f.on?'on':'off'}">
+     <input class="sw" type="checkbox" ${f.on?'checked':''} onchange="fleet[${i}].on=this.checked;desenhaFrota();calcular()">
+     <div class="ico">🏗️</div><h4>${f.nome}</h4>
+     <div class="sub">${f.tipo==='STS'?'Ship to shore':'Mobile harbour crane'}</div>
+     <label>Movimentos por hora</label>
+     <input type="number" step="0.5" value="${f.prod}" onchange="fleet[${i}].prod=parseFloat(this.value)||0;calcular()"></div>`).join('');
+}
+function desenhaOperadores(){
+  const nMax=Math.min(v('maxTernos')||1,fleet.filter(f=>f.on).length)||1;
+  const reqO=nMax+1,reqG=nMax+1;
+  const calc=(req,og,he,vi)=>({og:Math.min(og,req),he:Math.min(he,Math.max(0,req-og)),vi:Math.min(vi,Math.max(0,req-og-he)),sem:Math.max(0,req-og-he-vi)});
+  const G=calc(reqG,v('oGui'),v('qHeGui'),v('viGui')),O=calc(reqO,v('oOp3'),v('qHeOp3'),v('viOp3'));
+  const bal=x=>`<b>${x.og} OGMO</b> + <b>${x.he} HE</b> + <b>${x.vi} vinculado</b>${x.sem?` + <b style="color:var(--bad)">${x.sem} sem definição</b>`:''}.`;
+  document.getElementById('balGui').innerHTML=`Com ${nMax} terno(s), incluindo 1 rendição: `+bal(G);
+  document.getElementById('balOp3').innerHTML=`Com ${nMax} terno(s): `+bal(O);
+  const V=P.vinc,heG=parseFloat(s('heGui'))||0.5,heO=parseFloat(s('heOp3'))||0.5,heT=parseFloat(s('heTT'))||0.5;
+  document.getElementById('balTT').innerHTML=`<b>${v('ttOGMO')} OGMO</b> + <b>${v('ttVinc')} vinculado normal</b> + <b>${v('ttHE')} vinculado HE</b>. OGMO entra no custo do navio; normal e HE aparecem separados.`;
+  document.getElementById('opHint').innerHTML=`HE estimada por hora: guindaste ${money(V.op4.base*(1+heG))} · empilhadeira ${money(V.op3.base*(1+heO))} · TT ${money(V.tt.base*(1+heT))}. À noite soma-se ${Math.round(V.adicNoturno*100)}%.`;
+}
+
+function novaLinha(){
+  const d=fleet.filter(f=>f.on).slice(0,Math.min(v('maxTernos')||1,99));
+  return {operar:true,operou:true,open:true,vigia:true,confShared:false,data:s('etb')?s('etb').slice(0,10):fmtDate(new Date()),per:'P1',dia:'Normal',horas:v('horas')||6,
+    ternos:(d.length?d:[fleet[0]]).map(f=>({eq:f.id,on:true,cheio:0,vazio:0,sapata:1}))};
+}
+function proximaLinha(){
+  const r=novaLinha(),anterior=rows[rows.length-1];
+  if(!anterior)return r;
+  const pos=PKEYS.indexOf(anterior.per),proximo=pos<0?0:(pos+1)%PKEYS.length;
+  r.per=PKEYS[proximo];r.data=anterior.data;
+  if(proximo===0){const d=new Date(anterior.data+'T12:00:00');d.setDate(d.getDate()+1);r.data=fmtDate(d);}
+  const d=new Date(r.data+'T12:00:00');r.dia=!isNaN(d)&&d.getDay()===0?'Domingo':'Normal';
+  return r;
+}
+function addRow(){rows.push(proximaLinha());selRow=rows.length-1;desenhaPlano();calcular();}
+function delRow(i){rows.splice(i,1);if(selRow>=rows.length)selRow=Math.max(0,rows.length-1);desenhaPlano();calcular();}
+function limparPlano(){rows=[];desenhaPlano();calcular();}
+function zerarCarga(){rows.forEach(r=>r.ternos.forEach(t=>{t.cheio=0;t.vazio=0;}));desenhaPlano();calcular();toast('Cargas zeradas');}
+function setData(i,val){rows[i].data=val;const d=new Date(val+'T12:00:00');
+  if(!isNaN(d)&&rows[i].dia!=='Feriado')rows[i].dia=d.getDay()===0?'Domingo':'Normal';
+  desenhaPlano();calcular();}
+function saldoAntes(idx){
+  const total=v('totFull')+v('totEmpty');let usado=0;
+  for(let k=0;k<idx;k++){if(rows[k].operar&&rows[k].operou!==false)usado+=rows[k].ternos.reduce((a,t)=>a+(+t.cheio||0)+(+t.vazio||0),0);}
+  return Math.max(0,total-usado);
+}
+function distribuir(){
+  if(!rows.length){toast('Adicione ao menos um turno');return;}
+  let rc=v('totFull'),rv=v('totEmpty');
+  rows.forEach(r=>{
+    if(!r.operar||r.operou===false){r.ternos.forEach(t=>{t.cheio=0;t.vazio=0;});return;}
+    const sp=r.ternos.reduce((a,t)=>a+(fleet.find(f=>f.id===t.eq)?.prod||14),0)||1;
+    const cap=sp*(r.horas||6);const mov=Math.min(rc+rv,cap);
+    const prop=(rc+rv)>0?rc/(rc+rv):1;let mc=Math.min(Math.round(mov*prop),Math.round(rc)),mz=Math.min(Math.round(mov)-mc,Math.round(rv));
+    r.ternos.forEach(t=>{const share=(fleet.find(f=>f.id===t.eq)?.prod||14)/sp;t.cheio=Math.round(mc*share);t.vazio=Math.round(mz*share);});
+    rc-=mc;rv-=mz;});
+  desenhaPlano();calcular();toast('Saldo distribuído pelos turnos');
+}
+function toggleEq(i,id){
+  const f=fleet.find(x=>x.id===id);if(!f.on)return;
+  const arr=rows[i].ternos,k=arr.findIndex(t=>t.eq===id);
+  if(k>=0)arr.splice(k,1);else arr.push({eq:id,on:true,cheio:0,vazio:0,sapata:1});
+  desenhaPlano();calcular();
+}
+function setTerno(i,ei,campo,val){rows[i].ternos[ei][campo]=Math.max(0,parseFloat(val)||0);desenhaPlano();calcular();}
+function tabTerno(ev,i,ei,campo){
+  if(ev.key!=='Tab'||ev.shiftKey)return;
+  let ni=i,ne=ei,nc=campo==='cheio'?'vazio':'cheio';
+  if(campo==='vazio'){ne++;if(ne>=rows[i].ternos.length){ni++;ne=0;}}
+  const seletor=`[data-mov-input="${ni}-${ne}-${nc}"]`;
+  // Impede o onchange do campo removido de redesenhar a tela uma segunda vez
+  // e roubar o foco depois que o Tab já avançou.
+  ev.preventDefault();ev.currentTarget.onchange=null;
+  rows[i].ternos[ei][campo]=Math.max(0,parseFloat(ev.currentTarget.value)||0);
+  desenhaPlano();calcular();
+  // O onchange antigo foi desligado; agora o foco pode ser aplicado ao campo
+  // recém-criado sem um segundo redesenho mandá-lo de volta ao topo.
+  const alvo=document.querySelector(seletor);
+  if(alvo){alvo.focus();alvo.select();}
+}
+function setOperou(i,val){rows[i].operou=val;desenhaPlano();calcular();}
+function toggleOpen(i){rows[i].open=!rows[i].open;desenhaPlano();}
+function desenhaPlano(){
+  if(!rows.length)rows.push(novaLinha());
+  const total=v('totFull')+v('totEmpty');
+  document.getElementById('saldoInfo').value=nf(total)+' movimentos';
+  document.getElementById('simCards').innerHTML=rows.map((r,i)=>{
+    if(r.dia!=='Feriado'&&r.data){const dd=new Date(r.data+'T12:00:00');if(!isNaN(dd))r.dia=dd.getDay()===0?'Domingo':'Normal';}
+    const night=PERIODS[r.per].night, nao=r.operou===false;
+    const headCls=nao?'nao':(night?'night':'day');
+    const tc=r.ternos.reduce((a,t)=>a+(+t.cheio||0),0),tv=r.ternos.reduce((a,t)=>a+(+t.vazio||0),0);
+    const res=calcTurno(r);
+    const ternoRows=r.ternos.map((t,ei)=>{const f=fleet.find(x=>x.id===t.eq);
+      return `<div class="sc-terno">
+        <div class="sc-crane">T${ei+1} · ${f?f.nome:t.eq}<small>${f?f.prod+' mov/h':''}</small></div>
+        <div class="cv cheio"><label>CHEIOS</label><input data-mov-input="${i}-${ei}-cheio" type="number" min="0" value="${Math.round(t.cheio)}" onkeydown="tabTerno(event,${i},${ei},'cheio')" onchange="setTerno(${i},${ei},'cheio',this.value)"></div>
+        <div class="cv vazio"><label>VAZIOS</label><input data-mov-input="${i}-${ei}-vazio" type="number" min="0" value="${Math.round(t.vazio)}" onkeydown="tabTerno(event,${i},${ei},'vazio')" onchange="setTerno(${i},${ei},'vazio',this.value)"></div>
+        <div class="cv totalmov"><label>TOTAL</label><strong>${nf(nao?0:(+t.cheio||0)+(+t.vazio||0))}</strong></div>
+        <button class="btn sec" style="padding:4px 8px" onclick="event.stopPropagation();toggleEq(${i},'${t.eq}')" title="remover terno">×</button>
+      </div>`;}).join('');
+    return `<div class="simcard ${i===selRow?'sel':''} ${r.operar?'':'off'} ${r.open?'open':''}">
+      <div class="sc-head ${headCls}" onclick="selRow=${i};toggleOpen(${i});calcular()">
+        <span>${nao?'⛔':(night?'🌙':'☀️')}</span><span class="shift-state">${!r.operar?'— PULA':nao?'REQUISITADO · NÃO OPEROU':'✓ TRABALHA'}</span>
+        <input type="date" value="${r.data}" onclick="event.stopPropagation()" onchange="setData(${i},this.value)">
+        <select onclick="event.stopPropagation()" onchange="rows[${i}].per=this.value;desenhaPlano();calcular()">
+          ${PKEYS.map(k=>`<option value="${k}" ${r.per===k?'selected':''}>${PERIODS[k].lab}</option>`).join('')}</select>
+        <select onclick="event.stopPropagation()" onchange="rows[${i}].dia=this.value;calcular()">
+          ${['Normal','Domingo','Feriado'].map(k=>`<option ${r.dia===k?'selected':''}>${k}</option>`).join('')}</select>
+        <span class="who">${res.n} terno(s) · <span class="k">${nao?'0':nf(tc+tv)}</span> mov${nao?' (não operou)':''}</span>
+        <span class="badge">${money(res.total)}</span>
+        <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${r.operar?'checked':''} onchange="rows[${i}].operar=this.checked;desenhaPlano();calcular()"> requisitar</label>
+        <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${nao?'checked':''} onchange="setOperou(${i},!this.checked)"> não operou</label>
+        <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${r.vigia!==false?'checked':''} onchange="rows[${i}].vigia=this.checked;desenhaPlano();calcular()"> vigia</label>
+        <label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${r.confShared?'checked':''} onchange="rows[${i}].confShared=this.checked;desenhaPlano();calcular()"> chefe CF compartilhado</label>
+        <button class="btn sec" style="padding:4px 8px" onclick="event.stopPropagation();delRow(${i})">excluir</button>
+      </div>
+      <div class="sc-equipment"><strong>Equipamentos do turno</strong><div class="sc-chips">${fleet.map(f=>`<button type="button" class="chip ${r.ternos.some(t=>t.eq===f.id)?'on':''}" aria-pressed="${r.ternos.some(t=>t.eq===f.id)}" ${f.on?'':'disabled'} onclick="toggleEq(${i},'${f.id}')">${r.ternos.some(t=>t.eq===f.id)?'✓ ': '+ '}${f.nome}</button>`).join('')}</div><button class="btn sec" aria-expanded="${!!r.open}" onclick="selRow=${i};toggleOpen(${i});calcular()">${r.open?'Recolher detalhes ▴':'Movimentos e detalhes ▾'}</button></div>
+      ${alertaTurno(r,res)}
+      <div class="sc-body">
+        <label style="margin:4px 0">Horas do turno: <input type="number" step="0.5" min="0.5" max="6" value="${r.horas||6}" style="width:64px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--fieldbg);color:var(--ink)" onchange="rows[${i}].horas=parseFloat(this.value)||6;calcular()"></label>
+        ${nao?'<div class="hint" style="color:var(--bad)">Terno requisitado que não operou: paga o piso salarial de todas as categorias, sem produção. Informe os equipamentos abaixo para dimensionar o piso.</div>':ternoRows}
+        <div class="sc-sum">
+          <span>Cheios: <b>${nao?0:tc}</b></span><span>Vazios: <b>${nao?0:tv}</b></span><span>Total: <b>${nao?0:tc+tv}</b></span>
+          <span>Capacidade em ${nf(r.horas||6)}h: <b>${nf(res.capac)}</b></span>
+          <span>Saldo do navio antes deste turno: <b>${nf(saldoAntes(i))}</b></span>
+        </div>
+        <div class="sc-sum">
+          <span>Avulso: <b>${money(res.avulso)}</b></span><span>Vinculado: <b>${money(res.vinc)}</b></span>
+          <span>TPAs: <b>${res.tpas}</b></span><span>R$/mov: <b>${res.movs>0?money(res.cpm):'—'}</b></span>
+        </div>
+      </div></div>`;
+  }).join('');
+}
+function situacao(row,r){
+  if(!row.operar)return{cls:'t-off',txt:'Turno parado',msg:'Sem requisição.'};
+  if(row.operou===false)return{cls:'t-bad',txt:'Chamou e não operou',msg:'Paga o piso salarial sem produção.'};
+  if(!r.n)return{cls:'t-info',txt:'Sem equipamento',msg:'Selecione ao menos um terno.'};
+  if(r.movs<=0)return{cls:'t-bad',txt:'Sem carga',msg:'Ternos requisitados sem carga — paga piso integral.'};
+  if(r.movs>r.capac+0.5)return{cls:'t-info',txt:'Acima da capacidade',msg:'Volume maior que os equipamentos fazem em '+nf(r.horas)+'h.'};
+  return{cls:'t-good',txt:'Chamar',msg:'Turno pronto para requisição.'};
+}
+function alertaTurno(row,r){
+  if(!row.operar)return '';
+  const itens=[];let nivel='warn';
+  if(row.operou===false){nivel='bad';itens.push('Turno requisitado sem operação: haverá pagamento de piso sem movimentação.');}
+  else if(!r.n){nivel='bad';itens.push('Selecione ao menos um equipamento para este turno.');}
+  else if(r.movs<=0){nivel='bad';itens.push('Turno trabalhado sem carga preenchida: o piso integral será cobrado.');}
+  else{
+    const uso=r.capac>0?r.movs/r.capac:0;
+    if(r.movs>r.capac+0.5){nivel='bad';itens.push(`${nf(r.movs)} movimentos ultrapassam a capacidade de ${nf(r.capac)}. Aumente um terno ou transfira carga.`);}
+    else if(uso<0.6&&r.n>1)itens.push(`Apenas ${Math.round(uso*100)}% da capacidade está usada. Avalie reduzir 1 terno.`);
+    if(r.mix?.semGui)itens.push(`Faltam definir ${r.mix.semGui} guindasteiro(s), considerando a rendição.`);
+    if(r.mix?.semOp3)itens.push(`Faltam definir ${r.mix.semOp3} Operador(es) III.`);
+  }
+  if(!itens.length)return '';
+  const ico=nivel==='bad'?'⚠':'💡';
+  return `<div class="period-alert ${nivel}" role="alert"><span>${ico}</span><div><strong>Alerta deste período:</strong> ${itens.join(' ')}</div></div>`;
+}
+function calcular(){
+  desenhaOperadores();
+  const total=v('totFull')+v('totEmpty');
+  let plan=0,custo=0,av=0,vi=0,he=0,movs=0,turnos=0,tpas=0,ocioso=0;const cards=[];
+  rows.forEach((r,i)=>{
+    const res=calcTurno(r),sit=situacao(r,res);
+    const nao=r.operou===false;
+    if(r.operar){
+      if(nao){custo+=res.total;av+=res.avulso;vi+=res.vinc||0;he+=res.he||0;turnos++;tpas+=res.tpas;ocioso+=res.total;}
+      else{plan+=res.movs;if(res.total>0){custo+=res.total;av+=res.avulso;vi+=res.vinc||0;he+=res.he||0;movs+=res.movs;turnos++;tpas+=res.tpas;}}
+    }
+    cards.push({r,res,sit,i});
+  });
+  const taxaNavio=(turnos>0&&P.encargos.taxaConfOn)?P.encargos.taxaConfNavio:0;custo+=taxaNavio;av+=taxaNavio;
+  document.getElementById('kpis').innerHTML=`
+    <div class="kpi"><b>Carga do navio</b><span>${nf(total)}</span><small>cheios + vazios</small></div>
+    <div class="kpi"><b>Planejado</b><span>${nf(plan)}</span><small>${turnos} turno(s) requisitado(s)</small></div>
+    <div class="kpi"><b>Saldo a bordo</b><span>${nf(Math.max(0,total-plan))}</span><small>${plan>total?'⚠ excede o navio':'após o plano'}</small></div>
+    <div class="kpi"><b>Mão de obra avulsa</b><span>${money(av)}</span><small>${tpas} engajamentos + encargos</small></div>
+    <div class="kpi"><b>HE estimada</b><span>${money(he)}</span><small>fora do custo OGMO</small></div>
+    <div class="kpi"><b>Custo por movimento</b><span>${money(movs>0?custo/movs:0)}</span><small>total ${money(custo)}${ocioso>0?' · '+money(ocioso)+' ocioso':''}</small></div>`;
+  const cores=['#1666c4','#2f86e0','#57a8ea','#8ac6f2','#b7ddf7','#0f3f8c'];let acc=0,html='';
+  cards.forEach((c,i)=>{if(!c.r.operar||c.r.operou===false||!c.res.movs)return;acc+=c.res.movs;html+=`<i style="width:${Math.min(100,c.res.movs/Math.max(total,1)*100)}%;background:${cores[i%cores.length]}" title="${c.r.data} ${PERIODS[c.r.per].lab}: ${nf(c.res.movs)}"></i>`;});
+  document.getElementById('prog').innerHTML=html;
+  document.getElementById('progLab').innerHTML=`<span>${nf(acc)} de ${nf(total)} movimentos</span><span>${total>0?Math.round(acc/total*100):0}% do navio</span>`;
+  recomendar(cards,total,plan,movs>0?custo/movs:0);
+  detalhar();
+  renderShipSummary();
+}
+function recomendar(cards,total,plan,cpmAtual){
+  const box=document.getElementById('simRecom');const R=[];
+  const ativos=cards.filter(c=>c.r.operar&&c.r.operou!==false&&c.res.n);
+  if(!ativos.length){box.style.display='none';return;}
+  const prio=s('prioridade')||'custo';
+  // 1. turnos que não operaram
+  const nao=cards.filter(c=>c.r.operar&&c.r.operou===false);
+  if(nao.length){const perda=nao.reduce((a,c)=>a+c.res.total,0);
+    R.push(`⛔ <b>${nao.length} turno(s) chamado(s) sem operar</b> custam <b>${money(perda)}</b> em piso salarial, sem mover nenhum contêiner. Cancele a requisição em até 1h antes se a atracação atrasar.`);}
+  // 2. saldo não planejado
+  if(plan<total-1){R.push(`📦 Faltam <b>${nf(total-plan)}</b> movimentos sem turno. Adicione turno ou distribua o saldo.`);}
+  if(plan>total+1){R.push(`⚠ O plano tem <b>${nf(plan-total)}</b> movimentos a mais que o navio. Reduza carga dos ternos.`);}
+  // 3. sub/superdimensionamento por terno
+  ativos.forEach(c=>{
+    const cap=c.res.capac, mov=c.res.movs, oc=cap>0?mov/cap:0;
+    if(oc<0.6 && c.res.n>1){
+      R.push(`🔻 <b>${c.r.data.slice(8)}/${c.r.data.slice(5,7)} ${PERIODS[c.r.per].lab}</b>: usa ${Math.round(oc*100)}% da capacidade com ${c.res.n} ternos. <b>Diminuir 1 terno</b> reduz piso ocioso e sobe o R$/mov só um pouco.`);
+    } else if(oc>1.02){
+      R.push(`🔺 <b>${c.r.data.slice(8)}/${c.r.data.slice(5,7)} ${PERIODS[c.r.per].lab}</b>: ${nf(mov)} mov acima da capacidade de ${nf(cap)}. <b>Aumentar 1 terno</b> ou passar carga para o próximo turno.`);
+    }
+  });
+  // 4. prioridade
+  if(prio==='tempo'){R.push(`⚡ Prioridade tempo: concentre a carga em mais ternos por turno para fechar o navio antes, mesmo com R$/mov um pouco maior.`);}
+  else if(prio==='custo'){R.push(`💰 Prioridade custo: mantenha cada terno perto de 100% da capacidade e evite turnos ociosos; noturno e domingo encarecem ~20% e ~50%.`);}
+  box.style.display=R.length?'block':'none';
+  box.innerHTML='<b>Recomendações</b><br>'+R.join('<br>');
+}
+function detalhar(){
+  const r=rows[selRow],box=document.getElementById('detTables');if(!r){box.innerHTML='';return;}
+  const res=calcTurno(r);
+  const nao=r.operou===false;
+  document.getElementById('detTitle').textContent=`— ${r.data} · ${PERIODS[r.per].lab} · ${r.dia} · ${nf(res.horas)}h · ${res.n} terno(s)${nao?' · NÃO OPEROU':''}`;
+  if(!res.n){box.innerHTML='<div class="hint">Selecione equipamentos no card do turno.</div>';document.getElementById('report').textContent='Turno sem equipamento.';return;}
+  let html='';
+  Object.entries(res.linhas).forEach(([nome,bl])=>{
+    if(!bl.linhas.length)return;
+    html+=`<div class="grp"><h3>${nome} — ${money(bl.total)} <span class="mini" style="font-weight:400">${bl.tpas?'· '+bl.tpas+' TPA(s)':''}</span></h3>
+      <table><thead><tr><th>Função</th><th class="num">Qtd</th><th class="num">Por pessoa</th><th class="num">Total</th></tr></thead><tbody>`;
+    bl.linhas.forEach(l=>{html+=`<tr><td>${l.f}${l.hD!==undefined?` <span class="mini">(${nf(l.hD)}h+${nf(l.hN)}h not.)</span>`:''}</td><td class="num">${l.q}</td><td class="num">${money(l.unit)}</td><td class="num"><b>${money(l.tot)}</b></td></tr>`;});
+    html+='</tbody></table></div>';
+  });
+  /* encargos resumidos */
+  html+=`<div class="grp"><h3>Encargos sobre a MMO — ${money(res.encargos)}</h3><div class="mini">INSS ${Math.round(P.encargos.inss*100)}%, FGTS ${Math.round(P.encargos.fgts*100)}%, 13º ${(P.encargos.decimo*100).toFixed(2)}%, férias ${(P.encargos.ferias*100).toFixed(2)}%, mais subvenção/fundo/taxa negocial por categoria. Editável na base técnica.</div></div>`;
+  box.innerHTML=html;
+
+  const sit=situacao(r,res),L=[];
+  L.push('RESUMO DA CHAMADA');
+  L.push('Navio.............: '+(s('ship')||'—'));
+  L.push('Turno.............: '+r.data+'  '+PERIODS[r.per].lab+'  ('+r.dia+', '+nf(res.horas)+'h)');
+  L.push('Ternos............: '+res.ternos.map((t,i)=>`T${i+1} ${t.nome} ${Math.round(t.cheio)}c/${Math.round(t.vazio)}v`).join('  |  '));
+  if(res.mix){L.push('Guindasteiro......: '+res.mix.ogGui+' OGMO + '+res.mix.heGui+' HE + '+res.mix.viGui+' vinculado + '+res.mix.semGui+' sem definição');
+    L.push('Operador III......: '+res.mix.ogOp3+' OGMO + '+res.mix.heOp3+' HE + '+res.mix.viOp3+' vinculado + '+res.mix.semOp3+' sem definição');}
+  L.push('Movimentos........: '+nf(res.movs)+'  (capacidade '+nf(res.capac)+')');
+  L.push('');
+  L.push('CUSTO');
+  Object.entries(res.linhas).forEach(([k,b])=>{if(b.total>0)L.push(('  '+k+'........................').slice(0,26)+': '+money(b.total)+(b.tpas?'   ('+b.tpas+' TPA)':''));});
+  L.push(('  Encargos sobre a MMO.......').slice(0,26)+': '+money(res.encargos));
+  if(res.taxaConf>0)L.push(('  Taxa conf. informatizada...').slice(0,26)+': '+money(res.taxaConf));
+  L.push(('  SUBTOTAL AVULSO............').slice(0,26)+': '+money(res.avulso));
+  L.push(('  HE ESTIMADA (fora OGMO)....').slice(0,26)+': '+money(res.he||0));
+  L.push(('  VINCULADO NORMAL (fora)....').slice(0,26)+': '+money(res.vinc||0));
+  L.push(('  TOTAL OGMO DO TURNO........').slice(0,26)+': '+money(res.total));
+  L.push(('  Custo por movimento........').slice(0,26)+': '+money(res.cpm));
+  L.push(('  Trabalhadores avulsos......').slice(0,26)+': '+res.tpas);
+  document.getElementById('report').textContent=L.join('\n');
+}
+function copiarRelatorio(){navigator.clipboard.writeText(document.getElementById('report').textContent).then(()=>toast('Relatório copiado'));}
+
+/* Read-only presentation of the existing engine results. */
+function reportData(plan){
+  const shifts=plan.map(r=>({r,res:calcTurno(r)}));
+  const equipment={},categories={};let total=0,he=0,normal=0,moves=0,charged=0,encargos=0;
+  shifts.forEach(({r,res})=>{
+    if(!r.operar)return;
+    if(r.operou===false||res.total>0){total+=res.total;he+=res.he||0;normal+=res.vinc||0;charged++;encargos+=res.encargos||0;
+      Object.entries(res.linhas).forEach(([name,line])=>{categories[name]=(categories[name]||0)+(line.total||0);});
+    }
+    if(r.operou===false)return;
+    moves+=res.movs;
+    r.ternos.forEach(t=>{const f=fleet.find(f=>f.id===t.eq);const e=equipment[t.eq]||(equipment[t.eq]={name:f?f.nome:t.eq,full:0,empty:0});e.full+=+t.cheio||0;e.empty+=+t.vazio||0;});
+  });
+  const fee=charged&&P.encargos.taxaConfOn?P.encargos.taxaConfNavio:0;
+  return {shifts,equipment,categories,total:total+fee,he,normal,moves,fee,encargos};
+}
+function reportTable(headers,lines){return '<div class="summary-scroll"><table><thead><tr>'+headers.map(x=>'<th>'+uxEscape(x)+'</th>').join('')+'</tr></thead><tbody>'+lines.map(line=>{const forte=String(line[0]).startsWith('**');return '<tr'+(forte?' class="rowTotal"':'')+'>'+line.map(x=>'<td>'+uxEscape(String(x).replace(/^\*\*/,''))+'</td>').join('')+'</tr>';}).join('')+'</tbody></table></div>';}
+function shipReport(plan,details){
+  const d=reportData(plan);
+  const ativos=d.shifts.filter(x=>x.r.operar);
+  const trabalhados=ativos.filter(x=>x.r.operou!==false);
+  const naoOperou=ativos.filter(x=>x.r.operou===false);
+  const movTot=trabalhados.reduce((a,x)=>a+x.res.movs,0);
+  const cpm=movTot>0?d.total/movTot:0;
+  let out='<div class="ship-summary">';
+  /* faixa de indicadores */
+  out+='<div class="pdfKpis">'
+     +'<div class="pdfKpi"><b>Movimentos</b><span>'+nf(movTot)+'</span></div>'
+     +'<div class="pdfKpi"><b>Turnos trabalhados</b><span>'+trabalhados.length+'</span></div>'
+     +'<div class="pdfKpi"><b>Custo por movimento</b><span>'+money(cpm)+'</span></div>'
+     +'<div class="pdfKpi big"><b>Total OGMO do navio</b><span>'+money(d.total)+'</span></div>'
+     +'</div>';
+  if(naoOperou.length){
+    const perdido=naoOperou.reduce((a,x)=>a+x.res.total,0);
+    out+='<div class="pdfAlert">⛔ '+naoOperou.length+' turno(s) requisitado(s) que não operaram — '+money(perdido)+' pagos em piso salarial, sem produção.</div>';
+  }
+  out+='<p class="mini">HE estimada '+money(d.he)+' · vinculado normal '+money(d.normal)+' (fora do OGMO) · taxa única do navio '+money(d.fee)+'.</p>';
+
+  /* cartão por turno */
+  out+='<h3>Turno a turno</h3>';
+  d.shifts.forEach(({r,res},i)=>{
+    const ativo=r.operar, nao=r.operou===false, night=PERIODS[r.per].night;
+    const cls=!ativo?'skip':nao?'nao':'work';
+    const eqs=r.ternos.map(t=>{const f=fleet.find(f=>f.id===t.eq);return f?f.nome:t.eq;});
+    const mv=ativo&&!nao?res.movs:0;
+    out+='<div class="pdfShift '+cls+'">'
+       +'<div class="pdfShiftHead"><span>'+(night?'NOITE':'DIA')+' · '+uxEscape(r.data.split("-").reverse().join("/"))+' · '+uxEscape(PERIODS[r.per].lab)+'</span>'
+       +'<span>'+(!ativo?'PULA':nao?'REQUISITADO · NÃO OPEROU':'TRABALHA')+'</span></div>'
+       +'<div class="pdfShiftBody">'
+       +'<div class="pdfBox"><b>Ternos</b><span>'+(ativo?r.ternos.length:0)+'</span></div>'
+       +'<div class="pdfBox"><b>Movimentos</b><span>'+nf(mv)+'</span></div>'
+       +'<div class="pdfBox"><b>TPAs</b><span>'+(ativo?res.tpas:0)+'</span></div>'
+       +'<div class="pdfBox money"><b>Custo OGMO</b><span>'+money(ativo?res.total:0)+'</span></div>'
+       +'</div>'
+       +'<div class="pdfEq"><b>Guindastes:</b> '+uxEscape(eqs.join(' · ')||'nenhum')+'</div>';
+    if(ativo&&!nao&&r.ternos.length){
+      out+=reportTable(['Guindaste','Cheios','Vazios','Total'],
+        r.ternos.map(t=>{const f=fleet.find(f=>f.id===t.eq);
+          return [f?f.nome:t.eq,nf(t.cheio),nf(t.vazio),nf((+t.cheio||0)+(+t.vazio||0))];})
+        .concat([['**Total do turno',nf(r.ternos.reduce((a,t)=>a+(+t.cheio||0),0)),
+                  nf(r.ternos.reduce((a,t)=>a+(+t.vazio||0),0)),nf(mv)]]));
+    }
+    if(details&&ativo){
+      out+=reportTable(['Categoria','Valor'],Object.entries(res.linhas).map(([k,v2])=>[k,money(v2.total)])
+        .concat([['Encargos sobre MMO',money(res.encargos)],['**Total OGMO do turno',money(res.total)]]));
+    }
+    out+='</div>';
+  });
+
+  out+='<h3>Movimentos por equipamento no navio</h3>'+reportTable(['Equipamento','Cheios','Vazios','Total'],
+    Object.values(d.equipment).map(e=>[e.name,nf(e.full),nf(e.empty),nf(e.full+e.empty)]));
+  out+='<h3>Composição do custo</h3>'+reportTable(['Categoria / item','Valor'],
+    Object.entries(d.categories).map(([k,v2])=>[k,money(v2)])
+      .concat([['Encargos sobre MMO',money(d.encargos)],['Taxa única do navio',money(d.fee)],
+               ['**TOTAL OGMO',money(d.total)]]));
+  out+='<p class="mini">Valores de HE e vinculados são comparativos e não compõem o total OGMO.</p>';
+  return out+'</div>';
+}
+function renderShipSummary(){const el=document.getElementById('shipSummary');if(el)el.innerHTML=shipReport(rows,true);}
+function pdfCenario(i){
+  const viable=cenarios.filter(c=>c.viavel),pool=viable.length?viable:cenarios;
+  if(!pool.length){toast('Compare os cenários primeiro');return;}
+  const {barata,rapida,meia}=trio(pool),c=[barata,rapida,meia][i];
+  const title=['Alternativa mais barata','Alternativa mais rápida','Alternativa equilibrada'][i];
+  const intro='<p>'+uxEscape(c.pad.nome)+' · Início: '+uxEscape(fmtDT(c.ini))+' · Término: '+uxEscape(fmtDT(c.fim))+'</p><p><b>Total da alternativa: '+money(c.custo)+'</b> · '+money(c.cpm)+' por movimento</p>';
+  printReport(title,intro+shipReport(c.plano.map(p=>p.row),true));
+}
+function pdfSimulador(){printReport('Plano do simulador',shipReport(rows,document.getElementById('pdfDetalhes').checked));}
+function printReport(title,body){
+  const previous=document.getElementById('pdfFrame');if(previous)previous.remove();
+  const frame=document.createElement('iframe');frame.id='pdfFrame';frame.title='Relatório para PDF';frame.style.cssText='position:fixed;width:1px;height:1px;bottom:0;left:0;border:0';document.body.appendChild(frame);
+  const doc=frame.contentDocument;
+  doc.open();doc.write('<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><title>'+uxEscape((s('ship')||'Navio')+' — '+title)+'</title><style>@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font:11px/1.5 Arial,sans-serif;color:#14283f;background:white;margin:0}h1{font-size:22px;color:#123a72;margin:0 0 6px}h2{font-size:16px;margin:0 0 12px}h3{font-size:13px;margin:20px 0 7px;break-after:avoid}table{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed}th,td{padding:7px 5px;border-bottom:1px solid #cad4df;text-align:left;overflow-wrap:anywhere}th{background:#eaf0f7}thead{display:table-header-group}tr{break-inside:avoid}.summary-total{border:1px solid #aabdd4;background:#eef4fb;padding:12px;margin:12px 0}.summary-total span{display:block}.mini{color:#42566d;font-size:10px}.report-shift{margin-top:20px}.report-shift h3{border-top:2px solid #123a72;padding-top:10px}.pdfKpis{display:flex;gap:8px;margin:14px 0}.pdfKpi{flex:1;border:1px solid #aabdd4;border-radius:8px;padding:10px;background:#f4f8fd}.pdfKpi b{display:block;font-size:9px;color:#42566d;text-transform:uppercase;letter-spacing:.04em}.pdfKpi span{display:block;font-size:17px;font-weight:bold;color:#123a72;margin-top:3px}.pdfKpi.big{background:#123a72;border-color:#123a72}.pdfKpi.big b{color:#c7ddf5}.pdfKpi.big span{color:#fff}.pdfAlert{border:1px solid #d99;background:#fdeded;color:#8a2020;padding:10px;border-radius:8px;margin:10px 0;font-weight:bold}.pdfShift{border:1px solid #cad4df;border-radius:9px;margin:12px 0;overflow:hidden;break-inside:avoid}.pdfShiftHead{display:flex;justify-content:space-between;padding:8px 11px;font-weight:bold;font-size:11px;color:#fff}.pdfShift.work .pdfShiftHead{background:#1c6b40}.pdfShift.nao .pdfShiftHead{background:#8a2f3c}.pdfShift.skip .pdfShiftHead{background:#6b7787}.pdfShiftBody{display:flex;gap:8px;padding:10px}.pdfBox{flex:1;border:1px solid #dbe4ee;border-radius:7px;padding:7px;text-align:center}.pdfBox b{display:block;font-size:8.5px;color:#42566d;text-transform:uppercase}.pdfBox span{display:block;font-size:14px;font-weight:bold;color:#14283f;margin-top:2px}.pdfBox.money span{color:#1c6b40}.pdfEq{padding:0 11px 10px;font-size:10px;color:#42566d}.pdfShift table{margin:0 11px 11px;width:calc(100% - 22px)}.rowTotal td{font-weight:bold;background:#eef4fb;border-top:2px solid #123a72}</style></head><body><h1>Calculadora OGMO</h1><h2>'+uxEscape(title)+'</h2><p><b>Navio / viagem:</b> '+uxEscape(s('ship')||'Não informado')+'<br><b>Carga informada:</b> '+nf(v('totFull'))+' cheios + '+nf(v('totEmpty'))+' vazios</p>'+body+'</body></html>');doc.close();
+  frame.contentWindow.focus();frame.contentWindow.print();
+}
+
+/* ========================= BASE TÉCNICA ========================= */
+function inp(path,val,step){return `<input type="number" step="${step||0.01}" style="width:82px" value="${val}" onchange="setPath('${path}',this.value);calcular()">`;}
+function setPath(path,val){const p=path.split('.');let o=P;for(let i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=parseFloat(val)||0;}
+function setBool(path,val){const p=path.split('.');let o=P;for(let i=0;i<p.length-1;i++)o=o[p[i]];o[p[p.length-1]]=val;calcular();}
+function desenhaTecnica(){
+  const R=P.RT,E=P.encargos,V=P.vinc;
+  const lv=(k,cfg)=>`<tr><td>${cfg.nome}</td><td>${inp('vinc.'+k+'.base',cfg.base)}</td>
+    <td class="num">${money(cfg.base*(1+V.adicNoturno))}</td><td class="num">${money(cfg.base*1.5)}</td><td class="num">${money(cfg.base*2)}</td></tr>`;
+  document.getElementById('tech').innerHTML=`
+  <div class="bar">
+    <button class="btn" onclick="salvar()">Salvar base</button>
+    <button class="btn sec" onclick="restaurar()">Restaurar valores</button>
+    <button class="btn sec" onclick="exportar()">Exportar JSON</button>
+    <label class="btn sec" style="margin:0">Importar JSON<input type="file" accept="application/json" style="display:none" onchange="importar(this)"></label>
+    <button class="btn sec" onclick="trocarSenha()">Trocar senha</button>
+  </div>
+
+  <div class="grp"><h3>Reajuste e composição</h3>
+    <div class="g4">
+      <div><label>Fator INPC (reajuste data-base)</label>${inp('RT.inpc',R.inpc,0.0001)}</div>
+      <div><label>Homens por Equipe Navio / terno</label>${inp('RT.eqp.homens',R.eqp.homens,1)}</div>
+      <div><label>Qtd de Sapata / terno</label>${inp('RT.sapataQtd',R.sapataQtd,1)}</div>
+      <div><label>Salário base Equipe (dia / noite)</label>${inp('RT.eqp.salD',R.eqp.salD,0.01)} ${inp('RT.eqp.salN',R.eqp.salN,0.01)}</div>
+    </div>
+    <div class="mini" style="margin-top:6px">Adicionais ligados:
+      <label style="display:inline"><input type="checkbox" ${R.cfOn?'checked':''} onchange="setBool('RT.cfOn',this.checked)"> Conferente Navio/Pátio</label> ·
+      <label style="display:inline"><input type="checkbox" ${R.lacreOn?'checked':''} onchange="setBool('RT.lacreOn',this.checked)"> Conferente Lacre</label> ·
+      <label style="display:inline"><input type="checkbox" ${R.sapataOn?'checked':''} onchange="setBool('RT.sapataOn',this.checked)"> Adicional de Sapata</label></div>
+    <div class="hint">O fator INPC multiplica as taxas e salários da estiva e do arrumador (conferido contra a folha real: 1,0505). Estiva, conferente e bloco batem à vírgula com os pagamentos reais da JBS. Deixe 1,0000 para usar as tabelas cruas dos anexos.</div>
+  </div>
+
+  <div class="grp"><h3>Encargos sobre a mão de obra avulsa (MMO)</h3>
+    <div class="g4">
+      <div><label>INSS</label>${inp('encargos.inss',E.inss,0.001)}</div>
+      <div><label>FGTS</label>${inp('encargos.fgts',E.fgts,0.001)}</div>
+      <div><label>13º (sobre MMO)</label>${inp('encargos.decimo',E.decimo,0.0001)}</div>
+      <div><label>Férias (sobre MMO)</label>${inp('encargos.ferias',E.ferias,0.0001)}</div>
+    </div>
+    <div class="g4">
+      <div><label>Subvenção Estiva</label>${inp('encargos.subvEstiva',E.subvEstiva,0.001)}</div>
+      <div><label>Subvenção Arrumador</label>${inp('encargos.subvArrumador',E.subvArrumador,0.001)}</div>
+      <div><label>Fundo Negocial Arrumador</label>${inp('encargos.fundoArrumador',E.fundoArrumador,0.001)}</div>
+      <div><label>Taxa Negocial Bloco</label>${inp('encargos.taxaNegBloco',E.taxaNegBloco,0.001)}</div>
+    </div>
+    <div class="mini" style="margin-top:8px">Taxa de conferência informatizada ${inp('encargos.taxaConfNavio',E.taxaConfNavio,1)} por navio
+      <label style="display:inline"><input type="checkbox" ${E.taxaConfOn?'checked':''} onchange="setBool('encargos.taxaConfOn',this.checked)"> cobrar uma vez por navio</label></div>
+    <div class="hint">INSS, FGTS, 13º e férias incidem sobre (MMO + 13º + férias), como na folha do OGMO. Subvenção/fundo/taxa por categoria conforme a planilha de Taxas Sindicais JBS. Valores fixos mensais (subvenção fixa, ajuda de custo) não entram no custo por navio.</div>
+  </div>
+
+  <div class="grp"><h3>Custo do operador vinculado (por hora)</h3>
+    <table><thead><tr><th>Função</th><th>Normal</th><th class="num">Noturna (+${Math.round(V.adicNoturno*100)}%)</th><th class="num">50%</th><th class="num">100%</th></tr></thead>
+    <tbody>${lv('tt',V.tt)}${lv('op3',V.op3)}${lv('op4',V.op4)}</tbody></table>
+    <div class="mini" style="margin-top:7px">Adicional noturno ${inp('vinc.adicNoturno',V.adicNoturno,0.01)} · acumular com hora extra
+      <select onchange="setBool('vinc.acumulaHE',this.value==='1')"><option value="1" ${V.acumulaHE?'selected':''}>sim</option><option value="0" ${V.acumulaHE?'':'selected'}>não</option></select></div>
+  </div>
+
+  <div class="grp"><h3>Estiva — taxas e salários</h3>
+    <table><thead><tr><th></th><th>Cheio dia</th><th>Vazio dia</th><th>Cheio noite</th><th>Vazio noite</th><th>Sal. dia</th><th>Sal. noite</th><th>Cota</th></tr></thead><tbody><tr><td>Estiva</td>
+      <td>${inp('RT.estiva.chD',R.estiva.chD,0.00001)}</td><td>${inp('RT.estiva.vzD',R.estiva.vzD,0.00001)}</td>
+      <td>${inp('RT.estiva.chN',R.estiva.chN,0.00001)}</td><td>${inp('RT.estiva.vzN',R.estiva.vzN,0.00001)}</td>
+      <td>${inp('RT.estiva.salD',R.estiva.salD)}</td><td>${inp('RT.estiva.salN',R.estiva.salN)}</td><td>${inp('RT.estiva.cota',R.estiva.cota,0.1)}</td></tr></tbody></table>
+    <div class="hint">Contramestre-geral pelo melhor terno; contramestre de porão, portaló e lingada pela média das produções de lingada dos ternos ativos, comparada ao salário. Cada função recebe o maior entre produção e salário. É assim que a folha do OGMO calcula.</div>
+  </div>
+
+  <div class="grp"><h3>Arrumador (capatazia) — regime navio</h3>
+    <table><thead><tr><th>Função</th><th>Cheio dia</th><th>Vazio dia</th><th>Cheio noite</th><th>Vazio noite</th><th>Sal. dia</th><th>Sal. noite</th><th>Cota</th></tr></thead><tbody>
+      <tr><td>Capataz/Rendição</td><td>${inp('RT.cap.chD',R.cap.chD)}</td><td>${inp('RT.cap.vzD',R.cap.vzD)}</td><td>${inp('RT.cap.chN',R.cap.chN)}</td><td>${inp('RT.cap.vzN',R.cap.vzN)}</td><td>${inp('RT.cap.salD',R.cap.salD)}</td><td>${inp('RT.cap.salN',R.cap.salN)}</td><td>${inp('RT.cap.cota',R.cap.cota,0.1)}</td></tr>
+      <tr><td>Guindasteiro</td><td>${inp('RT.gui.chD',R.gui.chD)}</td><td>${inp('RT.gui.vzD',R.gui.vzD)}</td><td>${inp('RT.gui.chN',R.gui.chN)}</td><td>${inp('RT.gui.vzN',R.gui.vzN)}</td><td>${inp('RT.gui.salD',R.gui.salD)}</td><td>${inp('RT.gui.salN',R.gui.salN)}</td><td>${inp('RT.gui.cota',R.gui.cota,0.1)}</td></tr>
+      <tr><td>Equipe Navio (×3)</td><td>${inp('RT.eqp.chD',R.eqp.chD)}</td><td>${inp('RT.eqp.vzD',R.eqp.vzD)}</td><td>${inp('RT.eqp.chN',R.eqp.chN)}</td><td>${inp('RT.eqp.vzN',R.eqp.vzN)}</td><td>${inp('RT.eqp.salD',R.eqp.salD)}</td><td>${inp('RT.eqp.salN',R.eqp.salN)}</td><td>1</td></tr>
+      <tr><td>Conferente Navio/Pátio</td><td>${inp('RT.cf.chD',R.cf.chD)}</td><td>${inp('RT.cf.vzD',R.cf.vzD)}</td><td>${inp('RT.cf.chN',R.cf.chN)}</td><td>${inp('RT.cf.vzN',R.cf.vzN)}</td><td>${inp('RT.cf.salD',R.cf.salD)}</td><td>${inp('RT.cf.salN',R.cf.salN)}</td><td>1</td></tr>
+      <tr><td>Operador III (soma, >25 cnt)</td><td colspan="4">taxa ${inp('RT.op3.ch',R.op3.ch)}</td><td>${inp('RT.op3.salD',R.op3.salD)}</td><td>${inp('RT.op3.salN',R.op3.salN)}</td><td>1</td></tr>
+      <tr><td>Operador II (só salário)</td><td colspan="4"></td><td>${inp('RT.op2.salD',R.op2.salD)}</td><td>${inp('RT.op2.salN',R.op2.salN)}</td><td>1</td></tr>
+      <tr><td>Terminal Tractor OGMO</td><td colspan="4">produção ${inp('RT.tt.prod',R.tt.prod)} / contêiner</td><td>${inp('RT.tt.salD',R.tt.salD)}</td><td>${inp('RT.tt.salN',R.tt.salN)}</td><td>1</td></tr>
+    </tbody></table>
+    <div class="mini" style="margin-top:6px">
+      <label style="display:inline"><input type="checkbox" ${R.lacreOn?'checked':''} onchange="setBool('RT.lacreOn',this.checked)"> Conferente de Lacre (${money(R.lacre.salN)} noite)</label> &nbsp;·&nbsp;
+      <label style="display:inline"><input type="checkbox" ${R.sapataOn?'checked':''} onchange="setBool('RT.sapataOn',this.checked)"> Adicional de Sapata (${money(R.sapata.salN)} noite)</label></div>
+  </div>
+
+  <div class="grp"><h3>Conferentes — CCT publicada (BOX RATE JBS)</h3>
+    <table><thead><tr><th>Box cheio</th><th>Box vazio</th><th>Chefe dia</th><th>Chefe noite</th><th>Planista dia</th><th>Planista noite</th></tr></thead><tbody><tr>
+      <td>${inp('RT.conf.cheio',R.conf.cheio)}</td><td>${inp('RT.conf.vazio',R.conf.vazio)}</td>
+      <td>${inp('RT.conf.salD',R.conf.salD)}</td><td>${inp('RT.conf.salN',R.conf.salN)}</td>
+      <td>${inp('RT.conf.salD',R.conf.salD)}</td><td>${inp('RT.conf.salN',R.conf.salN)}</td></tr></tbody></table>
+    <div class="hint">Box rateado entre chefe e planistas pelos percentuais da CCT (51/49 com 1 terno, 34/33/33 com 2…). Cada um recebe produção ou salário, o que for maior. Domingo e feriado ×2. Se preferir a tabela do seu Excel (450/540 · 22,71/3,62), troque os valores aqui.</div>
+  </div>
+
+  <div class="grp"><h3>Vigia e Bloco</h3>
+    <table><thead><tr><th></th><th>Sal. dia</th><th>Sal. noite</th></tr></thead><tbody>
+      <tr><td>Vigia (Portaló)</td><td>${inp('RT.vigia.salD',R.vigia.salD)}</td><td>${inp('RT.vigia.salN',R.vigia.salN)}</td></tr>
+      <tr><td>Bloco — salário base</td><td>${inp('RT.bloco.salD',R.bloco.salD)}</td><td>${inp('RT.bloco.salN',R.bloco.salN)}</td></tr>
+    </tbody></table>
+    <div class="mini" style="margin-top:6px">Correção do bloco ${inp('RT.bloco.corr',R.bloco.corr,0.001)} · Faixa até ${inp('RT.bloco.faixa',R.bloco.faixa,1)} cnt:
+      1ª faixa dia ${inp('RT.bloco.f1D',R.bloco.f1D)} / noite ${inp('RT.bloco.f1N',R.bloco.f1N)} · acima: dia ${inp('RT.bloco.f2D',R.bloco.f2D)} / noite ${inp('RT.bloco.f2N',R.bloco.f2N)}</div>
+    <div class="hint">Bloco: 2 homens por terno. Até 25 contêineres paga o salário; do 26º em diante entra a produção por faixa. Vigia com adicional de domingo ×1,7. Bloco com correção ×1,09165 (conferida contra a folha real). Estiva e arrumador levam o fator INPC.</div>
+  </div>
+  `;
+}
+
+/* ===== TEMA CLARO/ESCURO ===== */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  const b=document.getElementById('themeBtn');
+  if(b)b.textContent=t==='dark'?'☀️ Claro':'🌙 Escuro';
+  try{localStorage.setItem('ogmo_theme',t);}catch(e){}
+}
+function toggleTheme(){applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
+
+/* ===== SENHA DA BASE TÉCNICA ===== */
+let TECH_PASS='jbs2026';
+try{const sv=localStorage.getItem('ogmo_techpass');if(sv)TECH_PASS=sv;}catch(e){}
+let techUnlocked=false;
+function techGuard(ev){
+  if(techUnlocked) return true;
+  ev.preventDefault();
+  const p=prompt('Base técnica protegida.\nDigite a senha para consultar e alterar:');
+  if(p===null) return false;
+  if(p===TECH_PASS){techUnlocked=true;
+    document.getElementById('techDetails').open=true;
+    document.querySelector('#techDetails summary').textContent='🔓 Base técnica — desbloqueada';
+    toast('Base técnica desbloqueada');
+  } else { toast('Senha incorreta'); }
+  return false;
+}
+function trocarSenha(){
+  const a=prompt('Senha atual:');if(a!==TECH_PASS){toast('Senha atual incorreta');return;}
+  const n=prompt('Nova senha:');if(!n){return;}
+  TECH_PASS=n;try{localStorage.setItem('ogmo_techpass',n);}catch(e){}
+  toast('Senha alterada');
+}
+
+/* ============================== INÍCIO ============================== */
+(function init(){
+  try{applyTheme(localStorage.getItem('ogmo_theme')||'light');}catch(e){applyTheme('light');}
+  const ag=new Date();ag.setMinutes(0,0,0);
+  const loc=d=>new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,16);
+  document.getElementById('etb').value=loc(ag);
+  document.getElementById('ets').value=loc(new Date(ag.getTime()+48*36e5));
+  ['totFull','totEmpty','horas','minHoras','maxTernos','ship','ttOGMO','ttVinc','ttHE','nightIni','nightFim','oOp3','oGui','viOp3','viGui','qHeOp3','qHeGui','heOp3','heGui','heTT','etb','ets','prontidao','vigia','prioridade']
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('change',calcular);});
+  desenhaFrota();desenhaOperadores();desenhaPlano();desenhaTecnica();calcular();
+})();
+
+</script>
+</body>
+</html>
